@@ -33,7 +33,7 @@ addEventHandlerToApp = function(id, call, type="unknown", app = getApp(),session
 #' 
 #' @param id name of the input element
 #' @param fun function that will be called if the input value changes. The function will be called with the arguments: 'id', 'value' and 'session'. One can assign the same handler functions to several input elements.
-addChangeHandler = function(id, fun,...,app=getApp(), on.create=FALSE) {
+changeHandler = function(id, fun,...,app=getApp(), on.create=FALSE) {
   #browser()
   fun = substitute(fun)
   # Create dynamic observer
@@ -56,7 +56,7 @@ addChangeHandler = function(id, fun,...,app=getApp(), on.create=FALSE) {
 #' 
 #' @param id name of the button
 #' @param fun function that will be called if button is pressed. The function will be called with the arguments: 'id', 'value' and 'session'. One can assign the same handler functions to several buttons.
-addButtonHandler = function(id, fun,..., app = getApp()) {
+buttonHandler = function(id, fun,..., app = getApp()) {
   
   if (app$verbose)
     display("\naddButtonHandler('",id,'",...)')
@@ -74,6 +74,46 @@ addButtonHandler = function(id, fun,..., app = getApp()) {
   )
   addEventHandlerToApp(id=id,call=ca,type="button",app=app)
 }
+
+
+#' Add an handler to a hotkey in an aceEditor component
+#' 
+#' @param id name of the button
+#' @param fun function that will be called if button is pressed. The function will be called with the following arguments:
+#' 
+#'  keyId: the id assigned to the hotkey
+#'  editorId: the id of the aceEditor widget
+#'  selection: if a text is selected, this selection
+#'  text: the text of the aceEditor widget
+#'  cursor: a list with the current cursor position:
+#'          row and column with index starting with 0
+#'  session: the current session object
+#'  
+aceHotkeyHandler = function(id, fun,..., app = getApp()) {
+  
+  if (app$verbose)
+    display("\naddButtonHandler('",id,'",...)')
+  
+  fun = substitute(fun)
+  args = list(...)
+
+  ca = substitute(env=list(s_id=id, s_fun=fun,s_args=args),
+    observe({
+      #restore.point("jdjfdgbfhdbgh")
+      #browser()
+      if (wasAceHotkeyPressed(s_id, input[[s_id]])) {
+        display(s_id, " has been pressed...")
+        res = input[[s_id]]
+        text = isolate(input[[res$editorId]])
+        li = c(list(keyId=s_id),res ,
+               list(text=text,session=session))
+        do.call(s_fun,li)
+      }
+    })
+  )
+  addEventHandlerToApp(id=id,call=ca,type="button",app=app)
+}
+
 
 
 #' Checks whether the value of an input item has been changed (internal function)
@@ -102,4 +142,18 @@ hasButtonCounterIncreased = function(id, counter, app=getApp()) {
   app$values[[id]] = counter
   cat("\ncounter has increased: ", id, " ",counter)
   return(TRUE)  
+}
+
+
+#' Checks whether a button has been pressed again (internal function)
+wasAceHotkeyPressed = function(keyId, value, app=getApp()) {
+  restore.point("hasButtonCounterIncreased")
+
+  if (is.null(value))
+    return(FALSE)
+  old.rand = app$aceHotKeyRandNum[[keyId]]
+  app$aceHotKeyRand[[keyId]] = value$randNum
+  
+  was.pressed = !identical(value$randNum, old.rand)
+  was.pressed
 }

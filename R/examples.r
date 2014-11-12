@@ -1,9 +1,39 @@
 
-example.how.it.should.look.like = function() {
+
+hotkey.shiny.events.example = function() {
+  library(shinyEvents)
+  library(shinyAce)
+  
+  app = eventsApp()
+
+  
+  ui = fluidPage(
+    aceEditor("myEdit",value = "Lorris ipsum",
+              hotkeys = list(runLine="Ctrl-Enter")),
+    actionButton("myBtn", "Press..."),
+    textOutput("myText")
+  )
+  
+  
+  buttonHandler("myBtn", function(id,session,...) {
+    updateAceEditor(session, "myEdit",value = paste0("Lorris ipsum", sample(1:1000,1)))
+  })
+  
+  aceHotkeyHandler("runLine", function(text,...) {
+    cat("Hotkey handler:\n")
+    print(list(...))
+    print(text)
+  })
+  
+  runEventsApp(app,ui=ui)  
+}
+
+
+basic.shinyEvents.example = function() {
   library(shiny)
   
   
-  app = eventsApp(set.app=TRUE)
+  app = eventsApp()
   
   # Main page
   ui = fluidPage(
@@ -23,7 +53,7 @@ example.how.it.should.look.like = function() {
   )
   setAppUI(ui)
   
-  addButtonHandler("handlerBtn", function(...) {
+  buttonHandler("handlerBtn", function(...) {
     updateText("myText", paste0("handler Button ", sample(1:1000,1)))
     
     cat("addButtonHandler laterBtn...")
@@ -34,7 +64,7 @@ example.how.it.should.look.like = function() {
   })
 
   # user changes value of an input
-  addChangeHandler("varInput",on.create=!TRUE, function(id, value,...) {
+  changeHandler("varInput",on.create=!TRUE, function(id, value,...) {
     updateText("myText",paste0(value," ", sample(1:1000,1)))
   })
 
@@ -59,15 +89,15 @@ example.how.it.should.look.like = function() {
   )
   
   
-  addButtonHandler("textBtn", text.button.handlers)
-  addButtonHandler("plotBtn", plot.button.handlers)
-  addButtonHandler("uiBtn", function(...) {
+  buttonHandler("textBtn", text.button.handlers)
+  buttonHandler("plotBtn", plot.button.handlers)
+  buttonHandler("uiBtn", function(...) {
     updateUI("myUI", dynUI)
   })
-  addButtonHandler("dynBtn", function(...) {
+  buttonHandler("dynBtn", function(...) {
     updateText("myText", paste0("dynamic ", sample(1:1000,1)))
     
-    addButtonHandler("waitBtn", function(...) {
+    buttonHandler("waitBtn", function(...) {
       updateText("myText", paste0("now we rock!! ", sample(1:1000,1)))
     })
   })
@@ -78,5 +108,3 @@ example.how.it.should.look.like = function() {
   runEventsApp(app,launch.browser=rstudio::viewer)
 
 }
-
-

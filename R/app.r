@@ -11,11 +11,12 @@
 .SHINY.EVENTS.ENV = new.env()
 
 #' Generate an empty shiny events app
-eventsApp = function(set.app=FALSE, verbose=FALSE) {
+eventsApp = function(set.as.default=TRUE, verbose=FALSE) {
   app = new.env()
   app$is.running = FALSE
   app$handlers = list()
   app$values = list()
+  app$aceHotKeyRandNum = list()
   app$run.event.handlers=FALSE
   app$do.update = list()
   app$verbose=TRUE
@@ -24,7 +25,7 @@ eventsApp = function(set.app=FALSE, verbose=FALSE) {
     setAppSession(session,app)
     addEventHandlersToSession(app$handlers, app)
   }
-  if (set.app)
+  if (set.as.default)
     setApp(app)
   app
 }

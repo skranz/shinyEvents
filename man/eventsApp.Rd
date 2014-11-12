@@ -3,7 +3,7 @@
 \alias{eventsApp}
 \title{Generate an empty shiny events app}
 \usage{
-eventsApp(set.app = FALSE, verbose = FALSE)
+eventsApp(set.as.default = TRUE, verbose = FALSE)
 }
 \description{
 Generate an empty shiny events app
