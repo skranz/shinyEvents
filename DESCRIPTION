@@ -10,4 +10,4 @@ Description: Shiny is a great package. Yet, for more complex
              its reactivity paradigm. This package wraps shiny 
              into more traditional event handlers. Not yet working.
 License: GPL >= 2.0
-Depends: stringtools, shiny, restorepoint
+Depends: shiny, restorepoint

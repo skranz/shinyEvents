@@ -3,14 +3,15 @@ example.how.it.should.look.like = function() {
   library(shiny)
   
   
-  app = shiny.app()
-  set.app(app)
+  app = eventsApp(set.app=TRUE)
   
   # Main page
   ui = fluidPage(
     actionButton("textBtn", "text"),
     actionButton("plotBtn", "plot"),
     actionButton("uiBtn", "ui"),
+    actionButton("handlerBtn", "make handler"),
+    actionButton("laterBtn", "later"),    
     selectInput("varInput", "Variable:",
         c("Cylinders" = "cyl",
           "Transmission" = "am",
@@ -18,89 +19,64 @@ example.how.it.should.look.like = function() {
     ),
     textOutput("myText"),
     plotOutput("myPlot"),
-    uiOutput('dynUI')
+    uiOutput('myUI')
   )
-  app$ui=ui
+  setAppUI(ui)
   
+  addButtonHandler("handlerBtn", function(...) {
+    updateText("myText", paste0("handler Button ", sample(1:1000,1)))
+    
+    cat("addButtonHandler laterBtn...")
+    addButtonHandler("laterBtn", function(...) {
+      cat("addButtonHandler laterBtn")
+      updateText("myText", paste0("now we rock!! ", sample(1:1000,1)))
+    })
+  })
+
   # user changes value of an input
-  add.change.handler("varInput",on.create=!TRUE, function(id, value,...) {
+  addChangeHandler("varInput",on.create=!TRUE, function(id, value,...) {
     updateText("myText",paste0(value," ", sample(1:1000,1)))
   })
 
-  button.handlers = function(id, value, ...) {
+  
+  text.button.handlers = function(id, value, ...) {
     updateText("myText", paste0("Hello world :",id," ", value," ", sample(1:1000,1)))    
   }
-  add.button.handler("textBtn", button.handlers)
-  add.button.handler("plotBtn", button.handlers)
-
-
+  plot.button.handlers = function(id, value, ...) {
+    updateText("myText", paste0("Hello world :",id," ", value," ",
+                sample(1:1000,1)))
+    library(ggplot2)
+    #p = qplot(mpg, wt, data=mtcars)
+    #updatePlot("myPlot", p)
+    updatePlot("myPlot", plot(runif(10)))
+  }
   
   num = 1
   # Dynamical UI that will be shown
   dynUI= fluidRow(
-    actionButton("dynBtn", paste0("dynamic ", num))
-  )
-  
-  
-  
-  # user presses a key
-  #add.hotkey.handler("varInput", fun_name)
-
-  run.app(app,launch.browser=rstudio::viewer)
-
-}
-
-
-
-example.how.it.should.look.like = function() {
-  library(shiny)
-  
-  
-  app = shiny.app()
-  set.app(app)
-  
-  # Main page
-  ui = fluidPage(
-    actionButton("staticBtn", "static button"),
-    uiOutput('dynUI')
-  )
-  app.main.ui(ui)
-  
-  # Dynamical UI that will be shown
-  dynUI= fluidRow(
     actionButton("dynBtn", paste0("dynamic ", num)),
-    selectInput("varInput", "Variable:",
-        c("Cylinders" = "cyl",
-          "Transmission" = "am",
-          "Gears" = "gear")
-    ),
-    textOutput("varOutput"),
-    plotOutput("myPlot")
+    actionButton("waitBtn", paste0("wait ", num))
   )
   
-  # user clicks
-  add.click.handler("dynBtn", function(...) {
-    update.ui("dynUI", dynUI)  
+  
+  addButtonHandler("textBtn", text.button.handlers)
+  addButtonHandler("plotBtn", plot.button.handlers)
+  addButtonHandler("uiBtn", function(...) {
+    updateUI("myUI", dynUI)
   })
-  
-  
-  
-  # user changes value of an input
-  add.change.handler("varInput",varInput.handler)
-  
-  varInput.handler = function(id, value,..., app=get.app()) {
-    val = ui.value(id) # get value of an ui element
-    if (!identical(val,value))
-      stop("Values should be equal.")
+  addButtonHandler("dynBtn", function(...) {
+    updateText("myText", paste0("dynamic ", sample(1:1000,1)))
     
-    update.ui("varOutput", value)  
-  }
-  
+    addButtonHandler("waitBtn", function(...) {
+      updateText("myText", paste0("now we rock!! ", sample(1:1000,1)))
+    })
+  })
+
   # user presses a key
   #add.hotkey.handler("varInput", fun_name)
 
-  runApp(app,launch.browser=rstudio::viewer)
+  runEventsApp(app,launch.browser=rstudio::viewer)
 
 }
 
-#example1.noevents()
+

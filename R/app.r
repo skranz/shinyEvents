@@ -8,33 +8,38 @@
 #   2. Call a function or render output when an input value has changed
 #   3. Update input values when an input value or variable has changed without triggering further events
 
-events.env = new.env()
+.SHINY.EVENTS.ENV = new.env()
 
-shiny.app = function() {
+#' Generate an empty shiny events app
+eventsApp = function(set.app=FALSE, verbose=FALSE) {
   app = new.env()
   app$is.running = FALSE
   app$handlers = list()
   app$values = list()
   app$run.event.handlers=FALSE
   app$do.update = list()
+  app$verbose=TRUE
   app$server = function(session, input, output) {
-    app = get.app()
-    set.app.session(session,app)
-    add.handlers.to.session(app$handlers, app)
-    #add.renderer.to.session(app$renderer, app)
+    app = getApp()
+    setAppSession(session,app)
+    addEventHandlersToSession(app$handlers, app)
   }
+  if (set.app)
+    setApp(app)
   app
 }
 
-set.app = function(app) {
-  events.env$app = app
+#' set the current app
+setApp = function(app) {
+  .SHINY.EVENTS.ENV$app = app
 }
 
-get.app = function() {
-  events.env$app
+#' get the current app
+getApp = function() {
+  .SHINY.EVENTS.ENV$app
 }
 
-set.app.session = function(session, app=get.app()) {
+setAppSession = function(session, app=getApp()) {
   app$session = session
   app$input = session$input
   app$output = session$output
@@ -47,19 +52,22 @@ set.app.session = function(session, app=get.app()) {
   app$session.env = session.env
 }
 
-run.app = function(app=get.app(),...) {
+#' set the main ui object for the app
+setAppUI = function(ui, app=getApp()) {
+  app$ui = ui
+}
+
+#' run shiny events app
+runEventsApp = function(app=getApp(),ui=NULL,...) {
   #add.ui.renderer(app=app)
+  if (!is.null(ui))
+    setAppUI(ui=ui, app=app)
+  
+  app$is.running = TRUE
   runApp(list(ui=app$ui, server=app$server),...)
+  #app$is.running = FALSE  
 }
 
 display = function(...) {
-  
-}
-
-updater.exists = function(id, app=get.app()) {
-  id %in% names(app$do.update)
-}
-
-perform.update = function(id, app=get.app()) {
-  app$do.update[[id]]$counter = isolate(app$do.update[[id]]$counter+1)
+  cat(...)  
 }
