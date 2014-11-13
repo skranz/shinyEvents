@@ -7,7 +7,9 @@ Author: Sebastian Kranz
 Maintainer: Sebastian Kranz <sebastian.kranz@uni-ulm.de>
 Description: Shiny is a great package. Yet, for more complex
              projects, I find it hard to write clean code with
-             its reactivity paradigm. This package wraps shiny 
-             into more traditional event handlers.
+             its reactivity paradigm. This package wraps shiny
+             into a more traditional ui programming approach:
+             - event handlers for input changes and button clicks
+             - explicit update functions to change outputs
 License: GPL >= 2.0
 Depends: shiny, restorepoint

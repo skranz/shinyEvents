@@ -33,6 +33,7 @@ addEventHandlerToApp = function(id, call, type="unknown", app = getApp(),session
 #' 
 #' @param id name of the input element
 #' @param fun function that will be called if the input value changes. The function will be called with the arguments: 'id', 'value' and 'session'. One can assign the same handler functions to several input elements.
+#' @param ... extra arguments that will be passed to fun when the event is triggered.  
 changeHandler = function(id, fun,...,app=getApp(), on.create=FALSE) {
   #browser()
   fun = substitute(fun)
@@ -56,6 +57,7 @@ changeHandler = function(id, fun,...,app=getApp(), on.create=FALSE) {
 #' 
 #' @param id name of the button
 #' @param fun function that will be called if button is pressed. The function will be called with the arguments: 'id', 'value' and 'session'. One can assign the same handler functions to several buttons.
+#' @param ... extra arguments that will be passed to fun when the event is triggered.  
 buttonHandler = function(id, fun,..., app = getApp()) {
   
   if (app$verbose)
@@ -68,7 +70,8 @@ buttonHandler = function(id, fun,..., app = getApp()) {
     observe({
       if (hasButtonCounterIncreased(s_id, input[[s_id]])) {
         display(s_id, " has been clicked...")
-        do.call(s_fun, c(list(id=s_id, value=input[[s_id]], session=session),s_args))
+        do.call(s_fun, c(list(id=s_id, value=input[[s_id]],
+                              session=session),s_args))
       }
     })
   )
@@ -88,7 +91,7 @@ buttonHandler = function(id, fun,..., app = getApp()) {
 #'  cursor: a list with the current cursor position:
 #'          row and column with index starting with 0
 #'  session: the current session object
-#'  
+#' @param ... extra arguments that will be passed to fun when the event is triggered.  
 aceHotkeyHandler = function(id, fun,..., app = getApp()) {
   
   if (app$verbose)
@@ -105,8 +108,8 @@ aceHotkeyHandler = function(id, fun,..., app = getApp()) {
         display(s_id, " has been pressed...")
         res = input[[s_id]]
         text = isolate(input[[res$editorId]])
-        li = c(list(keyId=s_id),res ,
-               list(text=text,session=session))
+        li = c(list(keyId=s_id),res,
+               list(text=text,session=session),s_args)
         do.call(s_fun,li)
       }
     })

@@ -15,11 +15,13 @@ hotkey.shiny.events.example = function() {
   )
   
   
-  buttonHandler("myBtn", function(id,session,...) {
-    updateAceEditor(session, "myEdit",value = paste0("Lorris ipsum", sample(1:1000,1)))
-  })
+  buttonHandler("myBtn", user.name="Sebastian",
+    function(id,session,user.name,...) {
+      updateAceEditor(session, "myEdit", value = paste0("Lorris ipsum", sample(1:1000,1), " ", user.name))
+    }
+  )
   
-  aceHotkeyHandler("runLine", function(text,...) {
+  aceHotkeyHandler("runLine", custom.var = "Omega",function(text,...) {
     cat("Hotkey handler:\n")
     print(list(...))
     print(text)
@@ -56,9 +58,8 @@ basic.shinyEvents.example = function() {
   buttonHandler("handlerBtn", function(...) {
     updateText("myText", paste0("handler Button ", sample(1:1000,1)))
     
-    cat("addButtonHandler laterBtn...")
-    addButtonHandler("laterBtn", function(...) {
-      cat("addButtonHandler laterBtn")
+    buttonHandler("laterBtn", function(...) {
+      cat("buttonHandler laterBtn")
       updateText("myText", paste0("now we rock!! ", sample(1:1000,1)))
     })
   })
