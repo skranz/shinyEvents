@@ -1,19 +1,21 @@
 updateRenderer = function(id, expr.object, renderFunc,
                           update.env=parent.frame(),app=app,
-                          overwrite.renderer=FALSE) {
-  
+                          overwrite.renderer=FALSE, level=0) {
+  restore.point("updateRenderer")
   # add a renderer that is triggered by performUpdate
   addUpdateRenderer(id=id, renderFunc=renderFunc, app=app, 
                     overwrite=overwrite.renderer) 
   app$update.expr = expr.object
   app$update.env = update.env
-  triggerWidgetUpdate(id, app)  
+  triggerWidgetUpdate(id, app, level=level) 
 }
 
 #' Update an dataTableOutput object. Can be used instead of renderDataTable
-updateDataTable = function(id, expr,update.env=parent.frame(), app=getApp()) {
+updateDataTable = function(id, expr,update.env=parent.frame(), app=getApp(),...) {
   expr.object = substitute(expr)
-  updateRenderer(id, expr.object, renderDataTable, update.env, app)
+  if (app$verbose)
+    cat("\n updateDataTable: ", id)
+  app$output[[id]] <- renderDataTable(env=update.env, quoted=TRUE, expr=expr.object,...)
 }
 
 #' Update an output object. Can be used instead of renderImage
@@ -41,9 +43,13 @@ updateText = function(id, expr,update.env=parent.frame(), app=getApp()) {
 }
 
 #' Update an uiOutput object. Can be used instead of renderUI
-updateUI = function(id, expr,update.env=parent.frame(), app=getApp()) {
+updateUI = function(id, expr,update.env=parent.frame(), app=getApp()) {  
   expr.object = substitute(expr)
-  updateRenderer(id, expr.object, renderUI, update.env, app)
+  restore.point("updateUI")
+  if (app$verbose)
+    cat("\n updateUI: ", id)
+  app$output[[id]] <- renderUI(env=update.env, quoted=TRUE, expr=expr.object)
+  #updateRenderer(id, expr.object, renderUI, update.env, app)
 }
 
 
@@ -51,10 +57,10 @@ hasUpdater = function(id, app=getApp()) {
   id %in% names(app$do.update)
 }
 
-triggerWidgetUpdate = function(id, app=getApp()) {
+triggerWidgetUpdate = function(id, app=getApp(), level=0) {
+  restore.point("triggerWidgetUpdate")
   app$do.update[[id]]$counter = isolate(app$do.update[[id]]$counter+1)
 }
-
 
 #updatePlot = function(id, expr, app=getApp(), update.env=parent.frame()) {
 #  #browser()
@@ -66,6 +72,9 @@ triggerWidgetUpdate = function(id, app=getApp()) {
 updatePlot = function(id, expr, app=getApp(), update.env=parent.frame()) {
   # Note: code is much simpler than other update code
   # Maybe we can always use this code
+  if (app$verbose)
+    cat("\n updatePlot: ", id)
+
   expr.object = substitute(expr)
   app$output[[id]] <- renderPlot(env=update.env, quoted=TRUE, expr=expr.object)
 }
@@ -76,7 +85,7 @@ addUpdateRenderer = function(id, renderFunc, app=getApp(),overwrite=FALSE) {
   if (overwrite | !hasUpdater(id,app)) {
     app$do.update[[id]] = reactiveValues(counter=0)
     app$output[[id]] <- renderFunc({
-      cat("Inside the render function...")
+      #cat("Inside the render function...")
       app$do.update[[id]]$counter
       eval(app$update.expr, app$update.env)
     })

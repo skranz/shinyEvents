@@ -34,21 +34,40 @@ addEventHandlerToApp = function(id, call, type="unknown", app = getApp(),session
 #' @param id name of the input element
 #' @param fun function that will be called if the input value changes. The function will be called with the arguments: 'id', 'value' and 'session'. One can assign the same handler functions to several input elements.
 #' @param ... extra arguments that will be passed to fun when the event is triggered.  
-changeHandler = function(id, fun,...,app=getApp(), on.create=FALSE) {
+changeHandler = function(id, fun,...,app=getApp(), pass.session=TRUE, on.create=FALSE) {
   #browser()
+  if (app$verbose)
+    display("\nadd changeHandler for ",id)
+
   fun = substitute(fun)
   # Create dynamic observer
   args = list(...)
-  ca = substitute(env=list(s_id=id, s_fun=fun,s_args=args, s_on.create=on.create),
-    observe({
-      display("called event handler for ",s_id)
-      input[[s_id]]
-      if (hasWidgetValueChanged(s_id, input[[s_id]], on.create=s_on.create)) {
-        display("run event handler for ",s_id)
-        do.call(s_fun, c(list(id=s_id, value=input[[s_id]], session=session),s_args))
-      }
-    })
-  )
+  
+  if (pass.session) {
+    ca = substitute(env=list(s_id=id, s_fun=fun,s_args=args, s_on.create=on.create),
+      observe({
+        display("called event handler for ",s_id)
+        input[[s_id]]
+        if (hasWidgetValueChanged(s_id, input[[s_id]], on.create=s_on.create)) {
+          display("run event handler for ",s_id)
+          do.call(s_fun, c(list(id=s_id, value=input[[s_id]], session=session),s_args))
+        }
+      })
+    )
+  } else {
+    ca = substitute(env=list(s_id=id, s_fun=fun,s_args=args, s_on.create=on.create),
+      observe({
+        display("called event handler for ",s_id)
+        input[[s_id]]
+        if (hasWidgetValueChanged(s_id, input[[s_id]], on.create=s_on.create)) {
+          display("run event handler for ",s_id)
+          do.call(s_fun, c(list(id=s_id, value=input[[s_id]],s_args)))
+        }
+      })
+    )    
+  }
+  
+  
   addEventHandlerToApp(id=id,call=ca,type="change",app=app)
 }
 
@@ -61,7 +80,7 @@ changeHandler = function(id, fun,...,app=getApp(), on.create=FALSE) {
 buttonHandler = function(id, fun,..., app = getApp()) {
   
   if (app$verbose)
-    display("\naddButtonHandler('",id,'",...)')
+    display("\nadd buttonHandler for ",id)
   
   fun = substitute(fun)
   args = list(...)
@@ -95,7 +114,7 @@ buttonHandler = function(id, fun,..., app = getApp()) {
 aceHotkeyHandler = function(id, fun,..., app = getApp()) {
   
   if (app$verbose)
-    display("\naddButtonHandler('",id,'",...)')
+    display("\nadd aceHotkeyHandler for ",id)
   
   fun = substitute(fun)
   args = list(...)
@@ -139,11 +158,13 @@ hasButtonCounterIncreased = function(id, counter, app=getApp()) {
   restore.point("hasButtonCounterIncreased")
   if (isTRUE(counter == 0) | is.null(counter) | isTRUE(counter<=app$values[[id]])) {
     app$values[[id]] = counter
-    cat("\nno counter increase: ", id, " ",counter)
+    if (app$verbose)
+      cat("\nno counter increase: ", id, " ",counter)
     return(FALSE)
   }
   app$values[[id]] = counter
-  cat("\ncounter has increased: ", id, " ",counter)
+  if (app$verbose)
+    cat("\ncounter has increased: ", id, " ",counter)
   return(TRUE)  
 }
 

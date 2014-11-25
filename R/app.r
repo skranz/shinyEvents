@@ -20,10 +20,17 @@ eventsApp = function(set.as.default=TRUE, verbose=FALSE) {
   app$run.event.handlers=FALSE
   app$do.update = list()
   app$verbose=TRUE
+  app$output = list()
+  app$trigger.list = list()
+  app$collect.triggers = TRUE
+  
+  app$initHandler = function(...) {}
+  
   app$server = function(session, input, output) {
     app = getApp()
     setAppSession(session,app)
     addEventHandlersToSession(app$handlers, app)
+    app$initHandler(session, input, output)
   }
   if (set.as.default)
     setApp(app)
@@ -41,10 +48,21 @@ getApp = function() {
 }
 
 setAppSession = function(session, app=getApp()) {
+  
   app$session = session
   app$input = session$input
-  app$output = session$output
+
+  #browser()
   
+  
+  # Copy initially defined output renderers
+  # into session$output object
+  app$initial.output = app$output
+  app$output = session$output
+  for (id in names(app$initial.output)) {
+    app$output[[id]] = app$initial.output[[id]]
+  }
+    
   session.env = new.env()
   session.env$session = session
   session.env$input = session$input

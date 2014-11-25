@@ -1,4 +1,42 @@
 
+nested.ui.example = function() {
+  library(shinyEvents)
+  library(shinyAce)
+  
+  app = eventsApp()
+
+  
+  main.ui = fluidPage(
+    actionButton("Btn0", "Main Button"),
+    textOutput("Text0"),
+    uiOutput("ui1")
+  )
+  ui1 = fluidRow(
+    actionButton("Btn1", "Button 1"),
+    textOutput("Text1"),
+    uiOutput("ui2")
+  )
+  ui2 = fluidRow(
+    actionButton("Btn2", "Button 2"),
+    textOutput("Text2"),
+    uiOutput("ui3")
+  )
+  updateUI("ui2",ui2)
+  updateUI("ui1",ui1)
+ 
+  press = function(id, level,...) {
+    txt = paste0(id, " ", sample(1:1000,1))
+    updateText(paste0("Text",level),txt)
+  }
+  
+  buttonHandler("Btn0", press, level=0)
+  buttonHandler("Btn1", press, level=1)
+  buttonHandler("Btn2", press, level=2)
+
+  
+  runEventsApp(app,ui=main.ui)  
+}
+
 
 hotkey.shiny.events.example = function() {
   library(shinyEvents)
@@ -18,6 +56,7 @@ hotkey.shiny.events.example = function() {
   buttonHandler("myBtn", user.name="Sebastian",
     function(id,session,user.name,...) {
       updateAceEditor(session, "myEdit", value = paste0("Lorris ipsum", sample(1:1000,1), " ", user.name))
+      updateText("myText","I pressed a button...")
     }
   )
   
@@ -26,6 +65,10 @@ hotkey.shiny.events.example = function() {
     print(list(...))
     print(text)
   })
+  
+  # I can update outputs before the app is started to set
+  # initial values.
+  updateText("myText","This is the start text...")
   
   runEventsApp(app,ui=ui)  
 }
