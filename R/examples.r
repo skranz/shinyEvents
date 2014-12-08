@@ -27,6 +27,7 @@ nested.ui.example = function() {
   press = function(id, level,...) {
     txt = paste0(id, " ", sample(1:1000,1))
     updateText(paste0("Text",level),txt)
+    removeEventHandler("Btn1")
   }
   
   buttonHandler("Btn0", press, level=0)

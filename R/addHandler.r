@@ -13,19 +13,51 @@ resetEventHandlers = function(app = getApp()) {
   app$values=list()  
 }
 
-addEventHandlersToSession = function(handlers, session.env=app$session.env, app=getApp()) {
-  for (el in handlers) {
-    call = el$call
-    eval(call, session.env)
+addEventHandlersToSession = function(session.env=app$session.env, app=getApp()) {
+  for (i in seq_along(app$handlers)) {
+    app$handlers[[i]]$observer = eval(app$handlers[[i]]$call, session.env)
   }
 }
 
-addEventHandlerToApp = function(id, call, type="unknown", app = getApp(),session.env=app$session.env) {
-  n = length(app$handlers)+1
-  app$handlers[[n]] = list(id=id, call=call, type=type)
-  names(app$handlers)[n] <- id
+removeEventHandler = function(id, ind, app=getApp()) {
+  if (!missing(id)) {
+    ind = which(names(app$handlers) %in% id)
+  }
+  #restore.point("removeEventHandler")
+  #browser()
   if (app$is.running) {
-    eval(call,app$session.env)
+    for (i in ind) {
+      app$handlers[[i]]$observer$destroy()    
+    }
+  }
+  if (length(ind)>0) {
+    app$handlers = app$handlers[-ind]
+  }
+}
+
+addEventHandlerToApp = function(id, call, type="unknown", app = getApp(),session.env=app$session.env, if.handler.exists = c("replace","add","skip")[1]) {
+  #restore.point("addEventHandlerToApp")
+  has.handler = id %in% names(app$handlers) 
+  
+  if ( (!has.handler) | if.handler.exists == "add") {
+    n = length(app$handlers)+1
+    app$handlers[[n]] = list(id=id, call=call, type=type, observer=NULL)
+    names(app$handlers)[n] <- id
+    if (app$is.running) {
+      app$handlers[[n]]$observer = eval(call,app$session.env)
+    }
+  } else if (if.handler.exists=="replace") {
+    if (app$is.running) {
+      app$handlers[[id]]$observer$destroy()
+    }
+    app$handlers[[id]] = list(id=id, call=call, type=type, observer=NULL)
+    if (app$is.running) {
+      app$handlers[[id]]$observer = eval(call,app$session.env)
+    }
+
+  } else {
+    # don't add handler
+    return()
   }
 }
 
@@ -34,7 +66,7 @@ addEventHandlerToApp = function(id, call, type="unknown", app = getApp(),session
 #' @param id name of the input element
 #' @param fun function that will be called if the input value changes. The function will be called with the arguments: 'id', 'value' and 'session'. One can assign the same handler functions to several input elements.
 #' @param ... extra arguments that will be passed to fun when the event is triggered.  
-changeHandler = function(id, fun,...,app=getApp(), pass.session=TRUE, on.create=FALSE) {
+changeHandler = function(id, fun,...,app=getApp(), pass.session=TRUE, on.create=FALSE, if.handler.exists = c("replace","add","skip")[1]) {
   #browser()
   if (app$verbose)
     display("\nadd changeHandler for ",id)
@@ -68,7 +100,7 @@ changeHandler = function(id, fun,...,app=getApp(), pass.session=TRUE, on.create=
   }
   
   
-  addEventHandlerToApp(id=id,call=ca,type="change",app=app)
+  addEventHandlerToApp(id=id,call=ca,type="change",app=app, if.handler.exists=if.handler.exists)
 }
 
 
@@ -77,7 +109,7 @@ changeHandler = function(id, fun,...,app=getApp(), pass.session=TRUE, on.create=
 #' @param id name of the button
 #' @param fun function that will be called if button is pressed. The function will be called with the arguments: 'id', 'value' and 'session'. One can assign the same handler functions to several buttons.
 #' @param ... extra arguments that will be passed to fun when the event is triggered.  
-buttonHandler = function(id, fun,..., app = getApp()) {
+buttonHandler = function(id, fun,..., app = getApp(),if.handler.exists = c("replace","add","skip")[1]) {
   
   if (app$verbose)
     display("\nadd buttonHandler for ",id)
@@ -94,7 +126,7 @@ buttonHandler = function(id, fun,..., app = getApp()) {
       }
     })
   )
-  addEventHandlerToApp(id=id,call=ca,type="button",app=app)
+  addEventHandlerToApp(id=id,call=ca,type="button",app=app, if.handler.exists=if.handler.exists)
 }
 
 
@@ -111,7 +143,7 @@ buttonHandler = function(id, fun,..., app = getApp()) {
 #'          row and column with index starting with 0
 #'  session: the current session object
 #' @param ... extra arguments that will be passed to fun when the event is triggered.  
-aceHotkeyHandler = function(id, fun,..., app = getApp()) {
+aceHotkeyHandler = function(id, fun,..., app = getApp(),if.handler.exists = c("replace","add","skip")[1]) {
   
   if (app$verbose)
     display("\nadd aceHotkeyHandler for ",id)
@@ -133,7 +165,7 @@ aceHotkeyHandler = function(id, fun,..., app = getApp()) {
       }
     })
   )
-  addEventHandlerToApp(id=id,call=ca,type="button",app=app)
+  addEventHandlerToApp(id=id,call=ca,type="button",app=app, if.handler.exists=if.handler.exists)
 }
 
 

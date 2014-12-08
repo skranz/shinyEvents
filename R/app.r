@@ -29,7 +29,7 @@ eventsApp = function(set.as.default=TRUE, verbose=FALSE) {
   app$server = function(session, input, output) {
     app = getApp()
     setAppSession(session,app)
-    addEventHandlersToSession(app$handlers, app)
+    addEventHandlersToSession(app=app)
     app$initHandler(session, input, output)
   }
   if (set.as.default)
