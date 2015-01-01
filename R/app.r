@@ -11,8 +11,11 @@
 .SHINY.EVENTS.ENV = new.env()
 
 #' Generate an empty shiny events app
-eventsApp = function(set.as.default=TRUE, verbose=FALSE) {
+eventsApp = function(set.as.default=TRUE, verbose=FALSE, single.instance=FALSE) {
   app = new.env()
+  app$glob = new.env(parent=globalenv())
+  app$single.instance = single.instance
+  app$isSessionEventApp = FALSE
   app$is.running = FALSE
   app$handlers = list()
   app$values = list()
@@ -28,9 +31,11 @@ eventsApp = function(set.as.default=TRUE, verbose=FALSE) {
   
   app$server = function(session, input, output) {
     app = getApp()
-    setAppSession(session,app)
-    addEventHandlersToSession(app=app)
-    app$initHandler(session, input, output)
+    app = setAppSession(session,app)
+    session = app$session
+    #browser()
+    addEventHandlersToSession(session=session,app=app)
+    app$initHandler(session=session, input=input, output=output)
   }
   if (set.as.default)
     setApp(app)
@@ -43,11 +48,23 @@ setApp = function(app) {
 }
 
 #' get the current app
-getApp = function() {
+getApp = function(session=NULL) {
+  if (is.null(session))
+    return(.SHINY.EVENTS.ENV$app)
+  app = attr(session,"eventsApp")
+  if (!is.null(app)) return(app)
   .SHINY.EVENTS.ENV$app
 }
 
-setAppSession = function(session, app=getApp()) {
+setAppSession = function(session, app=getApp(global=TRUE)) {
+  #restore.point("setAppSession")
+  
+  if (!app$single.instance) {
+    # create a copy of app
+    app = as.environment(as.list(app))
+    app$isSessionEventApp = TRUE
+    attr(session,"eventsApp")=app
+  }
   
   app$session = session
   app$input = session$input
@@ -68,7 +85,8 @@ setAppSession = function(session, app=getApp()) {
   session.env$input = session$input
   session.env$output = session$output
   
-  app$session.env = session.env
+  app$session.env = session.env 
+  app
 }
 
 #' set the main ui object for the app

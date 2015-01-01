@@ -2,10 +2,13 @@
 nested.ui.example = function() {
   library(shinyEvents)
   library(shinyAce)
-  
+  library(restorepoint)
+  set.restore.point.options(display.restore.point = TRUE)
+
   app = eventsApp()
 
-  
+  session=NULL
+
   main.ui = fluidPage(
     actionButton("Btn0", "Main Button"),
     textOutput("Text0"),
@@ -21,73 +24,76 @@ nested.ui.example = function() {
     textOutput("Text2"),
     uiOutput("ui3")
   )
-  updateUI("ui2",ui2)
-  updateUI("ui1",ui1)
- 
-  press = function(id, level,...) {
-    txt = paste0(id, " ", sample(1:1000,1))
-    updateText(paste0("Text",level),txt)
-    removeEventHandler("Btn1")
-  }
-  
-  buttonHandler("Btn0", press, level=0)
-  buttonHandler("Btn1", press, level=1)
-  buttonHandler("Btn2", press, level=2)
+  updateUI(session,"ui2",ui2)
+  updateUI(session,"ui1",ui1)
 
-  
-  runEventsApp(app,ui=main.ui)  
+  press = function(id, level,session,...) {
+    restore.point("press", dots=NULL)
+    txt = paste0(id, " ", sample(1:1000,1))
+    cat("before updateText")
+    updateText(session,paste0("Text",level),txt)
+    cat("after updateText")
+    removeEventHandler(session,"Btn1")
+    cat("\n finished press....")
+  }
+
+  buttonHandler(session,"Btn0", press, level=0)
+  buttonHandler(session,"Btn1", press, level=1)
+  buttonHandler(session,"Btn2", press, level=2)
+
+  runEventsApp(app,ui=main.ui)
 }
 
 
 hotkey.shiny.events.example = function() {
   library(shinyEvents)
   library(shinyAce)
-  
+
   app = eventsApp()
 
-  
+
   ui = fluidPage(
     aceEditor("myEdit",value = "Lorris ipsum",
               hotkeys = list(runLine="Ctrl-Enter")),
     actionButton("myBtn", "Press..."),
     textOutput("myText")
   )
-  
-  
+
+
   buttonHandler("myBtn", user.name="Sebastian",
     function(id,session,user.name,...) {
       updateAceEditor(session, "myEdit", value = paste0("Lorris ipsum", sample(1:1000,1), " ", user.name))
       updateText("myText","I pressed a button...")
     }
   )
-  
+
   aceHotkeyHandler("runLine", custom.var = "Omega",function(text,...) {
     cat("Hotkey handler:\n")
     print(list(...))
     print(text)
   })
-  
+
   # I can update outputs before the app is started to set
   # initial values.
   updateText("myText","This is the start text...")
-  
-  runEventsApp(app,ui=ui)  
+
+  runEventsApp(app,ui=ui)
 }
 
 
 basic.shinyEvents.example = function() {
   library(shiny)
-  
-  
+
+
   app = eventsApp()
-  
+
   # Main page
   ui = fluidPage(
     actionButton("textBtn", "text"),
     actionButton("plotBtn", "plot"),
     actionButton("uiBtn", "ui"),
     actionButton("handlerBtn", "make handler"),
-    actionButton("laterBtn", "later"),    
+    actionButton("laterBtn", "later"),
     selectInput("varInput", "Variable:",
         c("Cylinders" = "cyl",
           "Transmission" = "am",
@@ -98,10 +104,10 @@ basic.shinyEvents.example = function() {
     uiOutput('myUI')
   )
   setAppUI(ui)
-  
+
   buttonHandler("handlerBtn", function(...) {
     updateText("myText", paste0("handler Button ", sample(1:1000,1)))
-    
+
     buttonHandler("laterBtn", function(...) {
       cat("buttonHandler laterBtn")
       updateText("myText", paste0("now we rock!! ", sample(1:1000,1)))
@@ -113,9 +119,9 @@ basic.shinyEvents.example = function() {
     updateText("myText",paste0(value," ", sample(1:1000,1)))
   })
 
-  
+
   text.button.handlers = function(id, value, ...) {
-    updateText("myText", paste0("Hello world :",id," ", value," ", sample(1:1000,1)))    
+    updateText("myText", paste0("Hello world :",id," ", value," ", sample(1:1000,1)))
   }
   plot.button.handlers = function(id, value, ...) {
     updateText("myText", paste0("Hello world :",id," ", value," ",
@@ -125,15 +131,15 @@ basic.shinyEvents.example = function() {
     #updatePlot("myPlot", p)
     updatePlot("myPlot", plot(runif(10)))
   }
-  
+
   num = 1
   # Dynamical UI that will be shown
   dynUI= fluidRow(
     actionButton("dynBtn", paste0("dynamic ", num)),
     actionButton("waitBtn", paste0("wait ", num))
   )
-  
-  
+
+
   buttonHandler("textBtn", text.button.handlers)
   buttonHandler("plotBtn", plot.button.handlers)
   buttonHandler("uiBtn", function(...) {
@@ -141,7 +147,7 @@ basic.shinyEvents.example = function() {
   })
   buttonHandler("dynBtn", function(...) {
     updateText("myText", paste0("dynamic ", sample(1:1000,1)))
-    
+
     buttonHandler("waitBtn", function(...) {
       updateText("myText", paste0("now we rock!! ", sample(1:1000,1)))
     })
@@ -151,5 +157,44 @@ basic.shinyEvents.example = function() {
   #add.hotkey.handler("varInput", fun_name)
 
   runEventsApp(app,launch.browser=rstudio::viewer)
-
 }
+
+
+chat.example = function() {
+  library(shinyEvents)
+  library(shinyAce)
+
+  app = eventsApp()
+  app$glob$txt = "Conversation so far"
+  app$initHandler = function(session,...) {
+    updateTextInput(session,"userName",value=paste0("guest", sample.int(10000,1)) )
+    updateAceEditor(session,editorId = "convAce",value = app$glob$txt)
+  }
+  ui = fluidPage(
+    textInput("userName","User Name",""),
+    aceEditor("convAce",value = app$glob$txt, height="200px",showLineNumbers = FALSE),    
+    aceEditor("enterAce",value = "Your text",height="30px",showLineNumbers = FALSE,debounce = 100,hotkeys = list(addTextKey="Ctrl-Enter")),
+    fluidRow(
+      actionButton("addBtn", "add"),
+      actionButton("refreshBtn", "refresh")
+    )
+  )
+
+  addChatText = function(session,app,...) {
+    restore.point("addChatText")
+    user = isolate(session$input$userName)
+    str = isolate(session$input$enterAce)
+    app$glob$txt = paste0(app$glob$txt,"\n",user, ": ",paste0(str,collapse="\n"))
+    #updateAceEditor(session, "enterAce", value = "")
+    updateAceEditor(session, "convAce", value = app$glob$txt)
+  }
+  
+  buttonHandler(NULL,id="addBtn",addChatText)
+  aceHotkeyHandler(NULL,"addTextKey",addChatText)
+  buttonHandler(NULL,id="refreshBtn", function(session,app,...) {
+    updateAceEditor(session, "convAce", value = app$glob$txt)
+  })
+
+  runEventsApp(app,ui=ui)
+}
+
