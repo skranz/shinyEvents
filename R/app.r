@@ -35,7 +35,7 @@ eventsApp = function(set.as.default=TRUE, verbose=FALSE, single.instance=FALSE) 
     session = app$session
     #browser()
     addEventHandlersToSession(session=session,app=app)
-    app$initHandler(session=session, input=input, output=output)
+    app$initHandler(session=session, input=input, output=output, app=app)
   }
   if (set.as.default)
     setApp(app)
