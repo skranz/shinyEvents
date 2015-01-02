@@ -38,7 +38,7 @@ removeEventHandler = function(session=NULL, id, ind, app = getApp(session)) {
 
 }
 
-addEventHandlerToApp = function(session=NULL, id, call, type="unknown", app = getApp(session),session.env=app$session.env, if.handler.exists = c("replace","add","skip")[1]) {
+addEventHandlerToApp = function(session=NULL, id, call, type="unknown", app = getApp(session),session.env=app$session.env, if.handler.exists = c("replace","add","skip")[1], intervalMs=NULL) {
   #restore.point("addEventHandlerToApp")
   has.handler = id %in% names(app$handlers) 
   
@@ -62,6 +62,10 @@ addEventHandlerToApp = function(session=NULL, id, call, type="unknown", app = ge
     # don't add handler
     return()
   }
+  if (type == "timer") {
+    app$handlers[[id]]$timer = reactiveTimer(intervalMs = intervalMs, session)
+  }
+  
 }
 
 #' Add an handler to an input that is called when the input value changes
@@ -90,6 +94,33 @@ changeHandler = function(session=NULL, id, fun,...,app=getApp(session), on.creat
   )
   
   addEventHandlerToApp(id=id,call=ca,type="change",session=session,app=app, if.handler.exists=if.handler.exists)
+}
+
+
+#' Add an handler that triggers every intervalMs milliseconds
+#' 
+#' @param id name of the input element
+#' @param fun function that will be called if the input value changes. The function will be called with the arguments: 'id', 'value' and 'session'. One can assign the same handler functions to several input elements.
+#' @param ... extra arguments that will be passed to fun when the event is triggered.  
+timerHandler = function(session=NULL, id,intervalMs, fun,...,app=getApp(session), on.create=FALSE, if.handler.exists = c("replace","add","skip")[1], verbose=FALSE) {
+  #browser()
+  if (verbose)
+    display("\nadd timerHandler ",id)
+
+  fun = substitute(fun)
+  # Create dynamic observer
+  args = list(...)
+  
+  ca = substitute(env=list(s_id=id, s_fun=fun,s_args=args, s_on.create=on.create,s_verbose=verbose),
+    observe({
+      if (s_verbose)
+        display("\ncalled timer handler ",s_id)
+      cURReNTTime = app$handlers[[s_id]]$timer()
+      do.call(s_fun, c(list(id=s_id, value=cURReNTTime, session=session,app=app),s_args))
+    })
+  )
+  
+  addEventHandlerToApp(id=id,call=ca,type="timer",session=session,app=app, if.handler.exists=if.handler.exists, intervalMs=intervalMs)
 }
 
 

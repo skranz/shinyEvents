@@ -172,7 +172,7 @@ chat.example = function() {
   }
   ui = fluidPage(
     textInput("userName","User Name",""),
-    aceEditor("convAce",value = app$glob$txt, height="200px",showLineNumbers = FALSE),    
+    aceEditor("convAce",value = app$glob$txt, height="200px",showLineNumbers = FALSE, debounce=100),    
     aceEditor("enterAce",value = "Your text",height="30px",showLineNumbers = FALSE,debounce = 100,hotkeys = list(addTextKey="Ctrl-Enter")),
     fluidRow(
       actionButton("addBtn", "add"),
@@ -194,7 +194,14 @@ chat.example = function() {
   buttonHandler(NULL,id="refreshBtn", function(session,app,...) {
     updateAceEditor(session, "convAce", value = app$glob$txt)
   })
-
+  timerHandler(NULL,"refreshChatWindow",1000, function(session,app,...) {
+    txt = isolate(session$input$convAce)
+    if (!identical(txt, app$glob$txt)) {
+      cat("Refresh chat window...")
+      updateAceEditor(session, "convAce", value = app$glob$txt)
+    }
+  })
+  app$handlers[["refreshChatWindow"]]
   runEventsApp(app,ui=ui)
 }
 
