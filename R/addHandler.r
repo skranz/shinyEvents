@@ -51,7 +51,9 @@ addEventHandlerToApp = function(session=NULL, id, call, type="unknown", app = ge
     }
   } else if (if.handler.exists=="replace") {
     if (app$is.running) {
-      app$handlers[[id]]$observer$destroy()
+      if (is.function(app$handlers[[id]]$observer$destroy)) {
+        try(app$handlers[[id]]$observer$destroy())
+      }
     }
     app$handlers[[id]] = list(id=id, call=call, type=type, observer=NULL)
     if (app$is.running) {
