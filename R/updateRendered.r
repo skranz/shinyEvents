@@ -12,45 +12,38 @@ updateRenderer = function(session=NULL,id, expr.object, renderFunc,
 }
 
 #' Update an dataTableOutput object. Can be used instead of renderDataTable
-updateDataTable = function(session=NULL,id, expr,update.env=parent.frame(), app=getApp(session),...) {
-  expr.object = substitute(expr)
-  if (app$verbose)
-    cat("\n updateDataTable: ", id)
-  app$output[[id]] <- renderDataTable(env=update.env, quoted=TRUE, expr=expr.object,...)
+updateDataTable = function(session=NULL,id, val,update.env=parent.frame(), app=getApp(session),...) {
+  app$output[[id]] <- renderDataTable(val,...)
 }
 
+
+
 #' Update an output object. Can be used instead of renderImage
-updateImage = function(session=NULL,id, expr,update.env=parent.frame(), app=getApp(session)) {
-  expr.object = substitute(expr)
-  updateRenderer(id, expr.object, renderImage, update.env,session=session, app)
+updateImage = function(session=NULL,id, val,app=getApp(session),...) {
+  app$output[[id]] <- renderImage(val,...)
 }
 
 #' Update an textOutput object. Can be used instead of renderPrint
-updatePrint = function(session=NULL,id, expr, app=getApp(session), update.env=parent.frame()) {
-  expr.object = substitute(expr)
-  updateRenderer(id, expr.object, renderPrint, update.env,session=session, app)
-}
+updatePrint = function(session=NULL,id, expr, app=getApp(session), ...) {
+  app$output[[id]] <- renderPrint(val,...)}
 
 #' Update an tableOutput object. Can be used instead of renderTable
-updateTable = function(session=NULL,id, expr, app=getApp(session), update.env=parent.frame()) {
-  expr.object = substitute(expr)
-  updateRenderer(id, expr.object, renderTable, update.env,session=session, app)
+updateTable = function(session=NULL,id, val, app=getApp(session),...) {
+  app$output[[id]] <- renderTable(val,...)
 }
 
 #' Update an textOutput object. Can be used instead of renderText
-updateText = function(session=NULL,id, expr,update.env=parent.frame(), app=getApp(session)) {
-  expr.object = substitute(expr)
-  updateRenderer(id, expr.object, renderText, update.env,session=session, app)
+updateText = function(session=NULL,id, val, app=getApp(session),...) {
+  app$output[[id]] <- renderText(val,...)
 }
 
 #' Update an uiOutput object. Can be used instead of renderUI
-updateUI = function(session=NULL,id, expr,update.env=parent.frame(), app=getApp(session)) {  
-  expr.object = substitute(expr)
-  restore.point("updateUI")
-  if (app$verbose)
-    cat("\n updateUI: ", id)
-  app$output[[id]] <- renderUI(env=update.env, quoted=TRUE, expr=expr.object)
-  #updateRenderer(session,id, expr.object, renderUI, update.env, app)
+updateUI <- function (session, id, ui, app = getApp(session),...) 
+{
+    restore.point("updateUI")
+    if (app$verbose) 
+        cat("\n updateUI: ", id)
+    app$output[[id]] <- renderUI(ui,...)
 }
 
 

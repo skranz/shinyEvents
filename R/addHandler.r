@@ -14,6 +14,7 @@ resetEventHandlers = function(session=NULL, app = getApp(session)) {
 }
 
 addEventHandlersToSession = function(session=NULL,session.env=app$session.env, app=getApp(session)) {
+  restore.point("addEventHandlersToSession")
   for (i in seq_along(app$handlers)) {
     app$handlers[[i]]$observer = eval(app$handlers[[i]]$call, session.env)
   }
@@ -141,6 +142,7 @@ buttonHandler = function(session=NULL, id, fun,..., app = getApp(session),if.han
 
   ca = substitute(env=list(s_id=id, s_fun=fun,s_args=args),
     observe({
+      #browser()
       if (hasButtonCounterIncreased(session,s_id, input[[s_id]])) {
         display(s_id, " has been clicked...")
         do.call(s_fun, c(list(id=s_id, value=input[[s_id]],

@@ -50,7 +50,7 @@ hotkey.shiny.events.example = function() {
   library(shinyAce)
 
   app = eventsApp()
-
+  session=NULL
 
   ui = fluidPage(
     aceEditor("myEdit",value = "Lorris ipsum",
@@ -60,14 +60,14 @@ hotkey.shiny.events.example = function() {
   )
 
 
-  buttonHandler("myBtn", user.name="Sebastian",
+  buttonHandler(session,"myBtn", user.name="Sebastian",
     function(id,session,user.name,...) {
       updateAceEditor(session, "myEdit", value = paste0("Lorris ipsum", sample(1:1000,1), " ", user.name))
-      updateText("myText","I pressed a button...")
+      updateText(session,"myText","I pressed a button...")
     }
   )
 
-  aceHotkeyHandler("runLine", custom.var = "Omega",function(text,...) {
+  aceHotkeyHandler(session,"runLine", custom.var = "Omega",function(text,...) {
     cat("Hotkey handler:\n")
     print(list(...))
     print(text)
@@ -75,7 +75,7 @@ hotkey.shiny.events.example = function() {
 
   # I can update outputs before the app is started to set
   # initial values.
-  updateText("myText","This is the start text...")
+  updateText(session,"myText","This is the start text...")
 
   runEventsApp(app,ui=ui)
 }
@@ -105,31 +105,31 @@ basic.shinyEvents.example = function() {
   )
   setAppUI(ui)
 
-  buttonHandler("handlerBtn", function(...) {
-    updateText("myText", paste0("handler Button ", sample(1:1000,1)))
+  buttonHandler(session,"handlerBtn", function(...) {
+    updateText(session,"myText", paste0("handler Button ", sample(1:1000,1)))
 
-    buttonHandler("laterBtn", function(...) {
+    buttonHandler(session,"laterBtn", function(...) {
       cat("buttonHandler laterBtn")
-      updateText("myText", paste0("now we rock!! ", sample(1:1000,1)))
+      updateText(session,"myText", paste0("now we rock!! ", sample(1:1000,1)))
     })
   })
 
   # user changes value of an input
-  changeHandler("varInput",on.create=!TRUE, function(id, value,...) {
-    updateText("myText",paste0(value," ", sample(1:1000,1)))
+  changeHandler(session,"varInput",on.create=!TRUE, function(id, value,...) {
+    updateText(session,"myText",paste0(value," ", sample(1:1000,1)))
   })
 
 
   text.button.handlers = function(id, value, ...) {
-    updateText("myText", paste0("Hello world :",id," ", value," ", sample(1:1000,1)))
+    updateText(session,"myText", paste0("Hello world :",id," ", value," ", sample(1:1000,1)))
   }
   plot.button.handlers = function(id, value, ...) {
-    updateText("myText", paste0("Hello world :",id," ", value," ",
+    updateText(session,"myText", paste0("Hello world :",id," ", value," ",
                 sample(1:1000,1)))
     library(ggplot2)
     #p = qplot(mpg, wt, data=mtcars)
     #updatePlot("myPlot", p)
-    updatePlot("myPlot", plot(runif(10)))
+    updatePlot(session,"myPlot", plot(runif(10)))
   }
 
   num = 1
@@ -140,16 +140,16 @@ basic.shinyEvents.example = function() {
   )
 
 
-  buttonHandler("textBtn", text.button.handlers)
-  buttonHandler("plotBtn", plot.button.handlers)
-  buttonHandler("uiBtn", function(...) {
-    updateUI("myUI", dynUI)
+  buttonHandler(session,"textBtn", text.button.handlers)
+  buttonHandler(session,"plotBtn", plot.button.handlers)
+  buttonHandler(session,"uiBtn", function(session,...) {
+    updateUI(session,"myUI", dynUI)
   })
-  buttonHandler("dynBtn", function(...) {
-    updateText("myText", paste0("dynamic ", sample(1:1000,1)))
+  buttonHandler(session,"dynBtn", function(session,...) {
+    updateText(session,"myText", paste0("dynamic ", sample(1:1000,1)))
 
-    buttonHandler("waitBtn", function(...) {
-      updateText("myText", paste0("now we rock!! ", sample(1:1000,1)))
+    buttonHandler(session,"waitBtn", function(session,...) {
+      updateText(session,"myText", paste0("now we rock!! ", sample(1:1000,1)))
     })
   })
 
