@@ -48,37 +48,52 @@ updatePlot = function(session=NULL,id, expr, app=getApp(session), update.env=par
 }
 
 
-#' Update an dataTableOutput object. Can be used instead of renderDataTable
+#' Update an dataTableOutput object.
+#' 
+#' Can be used instead of renderDataTable.
+#' Similar to updateDataTable but no need to provide session object
 setDataTable = function(id, val,update.env=parent.frame(), app=getApp(),...) {
   updateDataTable(session=app$session, id=id, val=val, update.env=parent.frame(), app=app,...)
 }
 
 #' Update an output object. Can be used instead of renderImage
+#' 
+#' Similar to updateImage but no need to provide session object
 setImage = function(id, val,app=getApp(),...) {
   updateImage(session=app$session,id, val,app=app,...)
 }
 
 #' Update an textOutput object. Can be used instead of renderPrint
+#' 
+#' Similar to updatePrint but no need to provide session object
 setPrint = function(id, expr, app=getApp(), ...) {
   updatePrint(session=app$session,id, expr,app=app,...)
 }
 
 #' Update an tableOutput object. Can be used instead of renderTable
+#' 
+#' Similar to updateTable but no need to provide session object
 setTable = function(id, val, app=getApp(),...) {
   updateTable(session=app$session,id, val,app=app,...)  
 }
 
 #' Update an textOutput object. Can be used instead of renderText
+#' 
+#' Similar to updateText but no need to provide session object
 setText = function(id, val, app=getApp(),...) {
   updateText(session=app$session,id, val,app=app,...)  
 }
 
 #' Update an uiOutput object. Can be used instead of renderUI
+#'
+#' Similar to updateUI but no need to provide session object
 setUI <- function (id, ui, app = getApp(),...) {
   updateUI(session=app$session,id, ui,app=app,...)  
 }
 
 #' update an plotOutput object. Can be used instead of renderPlot.
+#' 
+#' Similar to updatePlot but no need to provide session object
 setPlot = function(id, expr, app=getApp(), update.env=parent.frame(),...) {
   updatePlot(session=app$session,id, expr,app=app, update.env=update.env,...)  
 }

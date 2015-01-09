@@ -9,18 +9,18 @@
 #   3. Update input values when an input value or variable has changed without triggering further events
 
 
-resetEventHandlers = function(session=NULL, app = getApp(session)) {
+resetEventHandlers = function(app = getApp()) {
   app$values=list()  
 }
 
-addEventHandlersToSession = function(session=NULL,session.env=app$session.env, app=getApp(session)) {
+addEventHandlersToSession = function(session.env=app$session.env, app=getApp()) {
   restore.point("addEventHandlersToSession")
   for (i in seq_along(app$handlers)) {
     app$handlers[[i]]$observer = eval(app$handlers[[i]]$call, session.env)
   }
 }
 
-removeEventHandler = function(session=NULL, id, ind, app = getApp(session)) {
+removeEventHandler = function(id, ind, app = getApp()) {
   #cat("\nremoveEventHandler")
 
   if (!missing(id)) {
@@ -39,7 +39,7 @@ removeEventHandler = function(session=NULL, id, ind, app = getApp(session)) {
 
 }
 
-addEventHandlerToApp = function(session=NULL, id, call, type="unknown", app = getApp(session),session.env=app$session.env, if.handler.exists = c("replace","add","skip")[1], intervalMs=NULL) {
+addEventHandlerToApp = function(id, call, type="unknown", app = getApp(),session.env=app$session.env, if.handler.exists = c("replace","add","skip")[1], intervalMs=NULL, session=getAppSession(app)) {
   #restore.point("addEventHandlerToApp")
   has.handler = id %in% names(app$handlers) 
   
@@ -68,7 +68,6 @@ addEventHandlerToApp = function(session=NULL, id, call, type="unknown", app = ge
   if (type == "timer") {
     app$handlers[[id]]$timer = reactiveTimer(intervalMs = intervalMs, session)
   }
-  
 }
 
 #' Add an handler to an input that is called when the input value changes
@@ -76,7 +75,7 @@ addEventHandlerToApp = function(session=NULL, id, call, type="unknown", app = ge
 #' @param id name of the input element
 #' @param fun function that will be called if the input value changes. The function will be called with the arguments: 'id', 'value' and 'session'. One can assign the same handler functions to several input elements.
 #' @param ... extra arguments that will be passed to fun when the event is triggered.  
-changeHandler = function(session=NULL, id, fun,...,app=getApp(session), on.create=FALSE, if.handler.exists = c("replace","add","skip")[1]) {
+changeHandler = function(id, fun,...,app=getApp(), on.create=FALSE, if.handler.exists = c("replace","add","skip")[1], session=getAppSession(app)) {
   #browser()
   if (app$verbose)
     display("\nadd changeHandler for ",id)
@@ -89,14 +88,14 @@ changeHandler = function(session=NULL, id, fun,...,app=getApp(session), on.creat
     observe({
       display("called event handler for ",s_id)
       input[[s_id]]
-      if (hasWidgetValueChanged(session,s_id, input[[s_id]], on.create=s_on.create)) {
+      if (hasWidgetValueChanged(s_id, input[[s_id]], on.create=s_on.create)) {
         display("run event handler for ",s_id)
         do.call(s_fun, c(list(id=s_id, value=input[[s_id]], session=session,app=app),s_args))
       }
     })
   )
   
-  addEventHandlerToApp(id=id,call=ca,type="change",session=session,app=app, if.handler.exists=if.handler.exists)
+  addEventHandlerToApp(id=id,call=ca,type="change",app=app, if.handler.exists=if.handler.exists)
 }
 
 
@@ -105,7 +104,7 @@ changeHandler = function(session=NULL, id, fun,...,app=getApp(session), on.creat
 #' @param id name of the input element
 #' @param fun function that will be called if the input value changes. The function will be called with the arguments: 'id', 'value' and 'session'. One can assign the same handler functions to several input elements.
 #' @param ... extra arguments that will be passed to fun when the event is triggered.  
-timerHandler = function(session=NULL, id,intervalMs, fun,...,app=getApp(session), on.create=FALSE, if.handler.exists = c("replace","add","skip")[1], verbose=FALSE) {
+timerHandler = function(id,intervalMs, fun,...,app=getApp(), on.create=FALSE, if.handler.exists = c("replace","add","skip")[1], verbose=FALSE, session=getAppSession(app)) {
   #browser()
   if (verbose)
     display("\nadd timerHandler ",id)
@@ -123,7 +122,7 @@ timerHandler = function(session=NULL, id,intervalMs, fun,...,app=getApp(session)
     })
   )
   
-  addEventHandlerToApp(id=id,call=ca,type="timer",session=session,app=app, if.handler.exists=if.handler.exists, intervalMs=intervalMs)
+  addEventHandlerToApp(id=id,call=ca,type="timer",app=app, if.handler.exists=if.handler.exists, intervalMs=intervalMs)
 }
 
 
@@ -132,7 +131,7 @@ timerHandler = function(session=NULL, id,intervalMs, fun,...,app=getApp(session)
 #' @param id name of the button
 #' @param fun function that will be called if button is pressed. The function will be called with the arguments: 'id', 'value' and 'session'. One can assign the same handler functions to several buttons.
 #' @param ... extra arguments that will be passed to fun when the event is triggered.  
-buttonHandler = function(session=NULL, id, fun,..., app = getApp(session),if.handler.exists = c("replace","add","skip")[1]) {
+buttonHandler = function(id, fun,..., app = getApp(),if.handler.exists = c("replace","add","skip")[1], session=getAppSession(app)) {
   
   if (app$verbose)
     display("\nadd buttonHandler for ",id)
@@ -143,14 +142,14 @@ buttonHandler = function(session=NULL, id, fun,..., app = getApp(session),if.han
   ca = substitute(env=list(s_id=id, s_fun=fun,s_args=args),
     observe({
       #browser()
-      if (hasButtonCounterIncreased(session,s_id, input[[s_id]])) {
+      if (hasButtonCounterIncreased(s_id, input[[s_id]])) {
         display(s_id, " has been clicked...")
         do.call(s_fun, c(list(id=s_id, value=input[[s_id]],
                               session=session,app=app),s_args))
       }
     })
   )
-  addEventHandlerToApp(id=id,call=ca,type="button",session=session,app=app, if.handler.exists=if.handler.exists)
+  addEventHandlerToApp(id=id,call=ca,type="button",app=app, if.handler.exists=if.handler.exists)
 }
 
 
@@ -167,7 +166,7 @@ buttonHandler = function(session=NULL, id, fun,..., app = getApp(session),if.han
 #'          row and column with index starting with 0
 #'  session: the current session object
 #' @param ... extra arguments that will be passed to fun when the event is triggered.  
-aceHotkeyHandler = function(session=NULL, id, fun,..., app = getApp(session),if.handler.exists = c("replace","add","skip")[1]) {
+aceHotkeyHandler = function(id, fun,..., app = getApp(),if.handler.exists = c("replace","add","skip")[1], session=getAppSession(app)) {
   
   if (app$verbose)
     display("\nadd aceHotkeyHandler for ",id)
@@ -179,7 +178,7 @@ aceHotkeyHandler = function(session=NULL, id, fun,..., app = getApp(session),if.
     observe({
       #restore.point("jdjfdgbfhdbgh")
       #browser()
-      if (wasAceHotkeyPressed(session,s_id, input[[s_id]])) {
+      if (wasAceHotkeyPressed(s_id, input[[s_id]])) {
         display(s_id, " has been pressed...")
         res = input[[s_id]]
         text = isolate(input[[res$editorId]])
@@ -189,13 +188,13 @@ aceHotkeyHandler = function(session=NULL, id, fun,..., app = getApp(session),if.
       }
     })
   )
-  addEventHandlerToApp(id=id,call=ca,type="button",session=session,app=app, if.handler.exists=if.handler.exists)
+  addEventHandlerToApp(id=id,call=ca,type="button",app=app, if.handler.exists=if.handler.exists)
 }
 
 
 
 #' Checks whether the value of an input item has been changed (internal function)
-hasWidgetValueChanged = function(session=NULL, id, new.value,on.create=FALSE, app = getApp(session)) {
+hasWidgetValueChanged = function(id, new.value,on.create=FALSE, app = getApp()) {
   restore.point("hasWidgetValueChanged")
   if (!id %in% names(app$values)) {
     app$values[[id]] = new.value
@@ -210,7 +209,7 @@ hasWidgetValueChanged = function(session=NULL, id, new.value,on.create=FALSE, ap
 }
 
 #' Checks whether a button has been pressed again (internal function)
-hasButtonCounterIncreased = function(session=NULL, id, counter, app = getApp(session)) {
+hasButtonCounterIncreased = function(id, counter, app = getApp()) {
   restore.point("hasButtonCounterIncreased")
   if (isTRUE(counter == 0) | is.null(counter) | isTRUE(counter<=app$values[[id]])) {
     app$values[[id]] = counter
@@ -226,7 +225,7 @@ hasButtonCounterIncreased = function(session=NULL, id, counter, app = getApp(ses
 
 
 #' Checks whether a button has been pressed again (internal function)
-wasAceHotkeyPressed = function(session=NULL,keyId, value, app = getApp(session)) {
+wasAceHotkeyPressed = function(keyId, value, app = getApp()) {
   restore.point("wasAceHotkeyPressed")
 
   if (is.null(value))
