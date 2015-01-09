@@ -3,7 +3,7 @@
 \alias{updatePrint}
 \title{Update an textOutput object. Can be used instead of renderPrint}
 \usage{
-updatePrint(id, expr, app = getApp(), update.env = parent.frame())
+updatePrint(session = NULL, id, expr, app = getApp(session), ...)
 }
 \description{
 Update an textOutput object. Can be used instead of renderPrint

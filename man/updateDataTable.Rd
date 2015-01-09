@@ -3,7 +3,7 @@
 \alias{updateDataTable}
 \title{Update an dataTableOutput object. Can be used instead of renderDataTable}
 \usage{
-updateDataTable(id, expr, update.env = parent.frame(), app = getApp())
+updateDataTable(session = NULL, id, val, app = getApp(session), ...)
 }
 \description{
 Update an dataTableOutput object. Can be used instead of renderDataTable

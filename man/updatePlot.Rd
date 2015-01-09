@@ -3,7 +3,8 @@
 \alias{updatePlot}
 \title{update an plotOutput object. Can be used instead of renderPlot.}
 \usage{
-updatePlot(id, expr, app = getApp(), update.env = parent.frame())
+updatePlot(session = NULL, id, expr, app = getApp(session),
+  update.env = parent.frame())
 }
 \description{
 update an plotOutput object. Can be used instead of renderPlot.

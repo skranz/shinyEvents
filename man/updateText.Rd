@@ -3,7 +3,7 @@
 \alias{updateText}
 \title{Update an textOutput object. Can be used instead of renderText}
 \usage{
-updateText(id, expr, update.env = parent.frame(), app = getApp())
+updateText(session = NULL, id, val, app = getApp(session), ...)
 }
 \description{
 Update an textOutput object. Can be used instead of renderText

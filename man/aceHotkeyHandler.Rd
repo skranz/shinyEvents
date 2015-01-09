@@ -3,7 +3,9 @@
 \alias{aceHotkeyHandler}
 \title{Add an handler to a hotkey in an aceEditor component}
 \usage{
-aceHotkeyHandler(id, fun, ..., app = getApp())
+aceHotkeyHandler(id, fun, ..., app = getApp(),
+  if.handler.exists = c("replace", "add", "skip")[1],
+  session = getAppSession(app))
 }
 \arguments{
 \item{id}{name of the button}
@@ -17,6 +19,8 @@ aceHotkeyHandler(id, fun, ..., app = getApp())
  cursor: a list with the current cursor position:
          row and column with index starting with 0
  session: the current session object}
+
+\item{...}{extra arguments that will be passed to fun when the event is triggered.}
 }
 \description{
 Add an handler to a hotkey in an aceEditor component

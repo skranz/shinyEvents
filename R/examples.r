@@ -24,22 +24,22 @@ nested.ui.example = function() {
     textOutput("Text2"),
     uiOutput("ui3")
   )
-  updateUI(session,"ui2",ui2)
-  updateUI(session,"ui1",ui1)
+  setUI("ui2",ui2)
+  setUI("ui1",ui1)
 
   press = function(id, level,session,...) {
     restore.point("press", dots=NULL)
     txt = paste0(id, " ", sample(1:1000,1))
-    cat("before updateText")
-    updateText(session,paste0("Text",level),txt)
-    cat("after updateText")
-    removeEventHandler(session,"Btn1")
+    cat("before setText")
+    setText(paste0("Text",level),txt)
+    cat("after setText")
+    removeEventHandler("Btn1")
     cat("\n finished press....")
   }
 
-  buttonHandler(session,"Btn0", press, level=0)
-  buttonHandler(session,"Btn1", press, level=1)
-  buttonHandler(session,"Btn2", press, level=2)
+  buttonHandler("Btn0", press, level=0)
+  buttonHandler("Btn1", press, level=1)
+  buttonHandler("Btn2", press, level=2)
 
   runEventsApp(app,ui=main.ui)
 }
@@ -60,22 +60,22 @@ hotkey.shiny.events.example = function() {
   )
 
 
-  buttonHandler(session,"myBtn", user.name="Sebastian",
+  buttonHandler("myBtn", user.name="Sebastian",
     function(id,session,user.name,...) {
       updateAceEditor(session, "myEdit", value = paste0("Lorris ipsum", sample(1:1000,1), " ", user.name))
-      updateText(session,"myText","I pressed a button...")
+      setText("myText","I pressed a button...")
     }
   )
 
-  aceHotkeyHandler(session,"runLine", custom.var = "Omega",function(text,...) {
+  aceHotkeyHandler("runLine", custom.var = "Omega",function(text,...) {
     cat("Hotkey handler:\n")
     print(list(...))
     print(text)
   })
 
-  # I can update outputs before the app is started to set
+  # I can set outputs before the app is started to set
   # initial values.
-  updateText(session,"myText","This is the start text...")
+  setText("myText","This is the start text...")
 
   runEventsApp(app,ui=ui)
 }
@@ -105,31 +105,31 @@ basic.shinyEvents.example = function() {
   )
   setAppUI(ui)
 
-  buttonHandler(session,"handlerBtn", function(...) {
-    updateText(session,"myText", paste0("handler Button ", sample(1:1000,1)))
+  buttonHandler("handlerBtn", function(...) {
+    setText("myText", paste0("handler Button ", sample(1:1000,1)))
 
-    buttonHandler(session,"laterBtn", function(...) {
+    buttonHandler("laterBtn", function(...) {
       cat("buttonHandler laterBtn")
-      updateText(session,"myText", paste0("now we rock!! ", sample(1:1000,1)))
+      setText("myText", paste0("now we rock!! ", sample(1:1000,1)))
     })
   })
 
   # user changes value of an input
-  changeHandler(session,"varInput",on.create=!TRUE, function(id, value,...) {
-    updateText(session,"myText",paste0(value," ", sample(1:1000,1)))
+  changeHandler("varInput",on.create=!TRUE, function(id, value,...) {
+    setText("myText",paste0(value," ", sample(1:1000,1)))
   })
 
 
   text.button.handlers = function(id, value, ...) {
-    updateText(session,"myText", paste0("Hello world :",id," ", value," ", sample(1:1000,1)))
+    setText("myText", paste0("Hello world :",id," ", value," ", sample(1:1000,1)))
   }
   plot.button.handlers = function(id, value, ...) {
-    updateText(session,"myText", paste0("Hello world :",id," ", value," ",
+    setText("myText", paste0("Hello world :",id," ", value," ",
                 sample(1:1000,1)))
     library(ggplot2)
     #p = qplot(mpg, wt, data=mtcars)
-    #updatePlot("myPlot", p)
-    updatePlot(session,"myPlot", plot(runif(10)))
+    #setPlot("myPlot", p)
+    setPlot("myPlot", plot(runif(10)))
   }
 
   num = 1
@@ -140,16 +140,16 @@ basic.shinyEvents.example = function() {
   )
 
 
-  buttonHandler(session,"textBtn", text.button.handlers)
-  buttonHandler(session,"plotBtn", plot.button.handlers)
-  buttonHandler(session,"uiBtn", function(session,...) {
-    updateUI(session,"myUI", dynUI)
+  buttonHandler("textBtn", text.button.handlers)
+  buttonHandler("plotBtn", plot.button.handlers)
+  buttonHandler("uiBtn", function(session,...) {
+    setUI("myUI", dynUI)
   })
-  buttonHandler(session,"dynBtn", function(session,...) {
-    updateText(session,"myText", paste0("dynamic ", sample(1:1000,1)))
+  buttonHandler("dynBtn", function(session,...) {
+    setText("myText", paste0("dynamic ", sample(1:1000,1)))
 
-    buttonHandler(session,"waitBtn", function(session,...) {
-      updateText(session,"myText", paste0("now we rock!! ", sample(1:1000,1)))
+    buttonHandler("waitBtn", function(session,...) {
+      setText("myText", paste0("now we rock!! ", sample(1:1000,1)))
     })
   })
 
@@ -167,7 +167,7 @@ chat.example = function() {
   app = eventsApp()
   app$glob$txt = "Conversation so far"
   app$initHandler = function(session,...) {
-    updateTextInput(session,"userName",value=paste0("guest", sample.int(10000,1)) )
+    setTextInput("userName",value=paste0("guest", sample.int(10000,1)) )
     updateAceEditor(session,editorId = "convAce",value = app$glob$txt)
   }
   ui = fluidPage(
@@ -182,20 +182,20 @@ chat.example = function() {
 
   addChatText = function(session,app,...) {
     restore.point("addChatText")
-    user = isolate(session$input$userName)
-    str = isolate(session$input$enterAce)
+    user = getInputValue("userName")
+    str = getInputValue("enterAce")
     app$glob$txt = paste0(app$glob$txt,"\n",user, ": ",paste0(str,collapse="\n"))
     #updateAceEditor(session, "enterAce", value = "")
     updateAceEditor(session, "convAce", value = app$glob$txt)
   }
   
-  buttonHandler(NULL,id="addBtn",addChatText)
-  aceHotkeyHandler(NULL,"addTextKey",addChatText)
-  buttonHandler(NULL,id="refreshBtn", function(session,app,...) {
+  buttonHandler(id="addBtn",addChatText)
+  aceHotkeyHandler("addTextKey",addChatText)
+  buttonHandler(id="refreshBtn", function(session,app,...) {
     updateAceEditor(session, "convAce", value = app$glob$txt)
   })
-  timerHandler(NULL,"refreshChatWindow",1000, function(session,app,...) {
-    txt = isolate(session$input$convAce)
+  timerHandler("refreshChatWindow",1000, function(session,app,...) {
+    txt = getInputValue("convAce")
     if (!identical(txt, app$glob$txt)) {
       cat("Refresh chat window...")
       updateAceEditor(session, "convAce", value = app$glob$txt)

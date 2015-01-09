@@ -3,12 +3,15 @@
 \alias{buttonHandler}
 \title{Add an handler to a button}
 \usage{
-buttonHandler(id, fun, ..., app = getApp())
+buttonHandler(id, fun, ..., app = getApp(), if.handler.exists = c("replace",
+  "add", "skip")[1], session = getAppSession(app))
 }
 \arguments{
 \item{id}{name of the button}
 
 \item{fun}{function that will be called if button is pressed. The function will be called with the arguments: 'id', 'value' and 'session'. One can assign the same handler functions to several buttons.}
+
+\item{...}{extra arguments that will be passed to fun when the event is triggered.}
 }
 \description{
 Add an handler to a button
