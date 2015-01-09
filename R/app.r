@@ -47,13 +47,23 @@ setApp = function(app) {
   .SHINY.EVENTS.ENV$app = app
 }
 
-#' get the current app
+
+#' get the current app object
+#' 
+#' If the app is already running, gets by default the local app copy
+#' corresponding to the current session
 getApp = function(session=NULL) {
+  gapp = .SHINY.EVENTS.ENV$app
+  if (is.null(session)) {
+    if (gapp$is.running)
+      session = getCurrentSession()
+  }
   if (is.null(session))
     return(.SHINY.EVENTS.ENV$app)
+  
   app = attr(session,"eventsApp")
   if (!is.null(app)) return(app)
-  .SHINY.EVENTS.ENV$app
+  gapp
 }
 
 setAppSession = function(session, app=getApp(global=TRUE)) {
@@ -112,4 +122,16 @@ display = function(...) {
 #' Get the current session object
 getCurrentSession =  function() {
   getDefaultReactiveDomain()
+}
+
+#' Get the session associated with the app object
+getAppSession = function(app=NULL) {
+  if (is.null(app))
+    return(getCurrentSession())
+  app$session
+}
+
+#' Get an input value from the current session
+getInputValue = function(id, session=getAppSession(app),app=getApp()) {
+  isolate(session$input[[id]])
 }

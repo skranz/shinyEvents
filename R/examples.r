@@ -219,15 +219,14 @@ find.current.app.example = function() {
     app$id = app$glob$id
   }
   ui = fluidPage(
+    textInput("name","Name:",paste0("guest")),
     actionButton("btn","Click me"),
     textOutput("out")
   )
 
   buttonHandler(NULL,"btn", function(...) {
-    session = getCurrentSession()
-    app = getApp(session)
-    txt = paste0("id = ", app$id,"  ", sample.int(10000,1))
-    updateText(session,"out",txt)
+    txt = paste0("name = ", getInputValue("name"), " id = ", app$id,"  ", sample.int(10000,1))
+    setText("out",txt)
   })
   runEventsApp(app,ui=ui)
 }

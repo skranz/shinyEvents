@@ -1,22 +1,11 @@
-updateRenderer = function(session=NULL,id, expr.object, renderFunc,
-                          update.env=parent.frame(), 
-                          app=getApp(session),
-                          overwrite.renderer=FALSE, level=0) {
-  restore.point("updateRenderer")
-  # add a renderer that is triggered by performUpdate
-  addUpdateRenderer(id=id, renderFunc=renderFunc, app=app, 
-                    overwrite=overwrite.renderer) 
-  app$update.expr = expr.object
-  app$update.env = update.env
-  triggerWidgetUpdate(id, app=app, session=session, level=level) 
+hasUpdater = function(session=NULL,id, app=getApp(session)) {
+  id %in% names(app$do.update)
 }
 
 #' Update an dataTableOutput object. Can be used instead of renderDataTable
-updateDataTable = function(session=NULL,id, val,update.env=parent.frame(), app=getApp(session),...) {
+updateDataTable = function(session=NULL,id, val,app=getApp(session),...) {
   app$output[[id]] <- renderDataTable(val,...)
 }
-
-
 
 #' Update an output object. Can be used instead of renderImage
 updateImage = function(session=NULL,id, val,app=getApp(session),...) {
@@ -47,22 +36,6 @@ updateUI <- function (session, id, ui, app = getApp(session),...)
 }
 
 
-hasUpdater = function(session=NULL,id, app=getApp(session)) {
-  id %in% names(app$do.update)
-}
-
-triggerWidgetUpdate = function(session=NULL,id, app=getApp(session), level=0) {
-  restore.point("triggerWidgetUpdate")
-  app$do.update[[id]]$counter = isolate(app$do.update[[id]]$counter+1)
-  cat("end triggerWidgetUpdate")
-}
-
-#updatePlot = function(session=NULL,id, expr, app=getApp(session), update.env=parent.frame()) {
-#  #browser()
-#  expr.object = substitute(expr)
-#  updateRenderer(session,id, expr.object, myRenderPlot, update.env, app)
-#}
-
 #' update an plotOutput object. Can be used instead of renderPlot.
 updatePlot = function(session=NULL,id, expr, app=getApp(session), update.env=parent.frame()) {
   # Note: code is much simpler than other update code
@@ -74,16 +47,47 @@ updatePlot = function(session=NULL,id, expr, app=getApp(session), update.env=par
   app$output[[id]] <- renderPlot(env=update.env, quoted=TRUE, expr=expr.object)
 }
 
-addUpdateRenderer = function(session=NULL,id, renderFunc, app=getApp(session),overwrite=FALSE) {
-  #restore.point("addUpdateRenderer")
-  
-  if (overwrite | !hasUpdater(id,app)) {
-    app$do.update[[id]] = reactiveValues(counter=0)
-    app$output[[id]] <- renderFunc({
-      #cat("Inside the render function...")
-      app$do.update[[id]]$counter
-      eval(app$update.expr, app$update.env)
-    })
-  }
+
+#' Update an dataTableOutput object. Can be used instead of renderDataTable
+setDataTable = function(id, val,update.env=parent.frame(), app=getApp(),...) {
+  updateDataTable(session=app$session, id=id, val=val, update.env=parent.frame(), app=app,...)
 }
+
+#' Update an output object. Can be used instead of renderImage
+setImage = function(id, val,app=getApp(),...) {
+  updateImage(session=app$session,id, val,app=app,...)
+}
+
+#' Update an textOutput object. Can be used instead of renderPrint
+setPrint = function(id, expr, app=getApp(), ...) {
+  updatePrint(session=app$session,id, expr,app=app,...)
+}
+
+#' Update an tableOutput object. Can be used instead of renderTable
+setTable = function(id, val, app=getApp(),...) {
+  updateTable(session=app$session,id, val,app=app,...)  
+}
+
+#' Update an textOutput object. Can be used instead of renderText
+setText = function(id, val, app=getApp(),...) {
+  updateText(session=app$session,id, val,app=app,...)  
+}
+
+#' Update an uiOutput object. Can be used instead of renderUI
+setUI <- function (id, ui, app = getApp(),...) {
+  updateUI(session=app$session,id, ui,app=app,...)  
+}
+
+#' update an plotOutput object. Can be used instead of renderPlot.
+setPlot = function(id, expr, app=getApp(), update.env=parent.frame(),...) {
+  updatePlot(session=app$session,id, expr,app=app, update.env=update.env,...)  
+}
+
+# #' update an aceEditor object.
+# setAceEditor = function(editorId, value, theme, readOnly, mode, fontSize, 
+#     wordWrap, border = c("normal", "alert", "flash"), autoComplete = c("disabled", 
+#         "enabled", "live"), autoCompleteList = NULL, app=getApp(), ...) {
+# 
+#   updateAceEditor(session=app$session, editorId=editorId, value=value, theme=theme, readOnly=readOnly, mode=mode, fontSize=fontSize,wordWrap=wordWrap, border = border, autoComplete = autoComplete, autoCompleteList = autoCompleteList,...) 
+# }
 
