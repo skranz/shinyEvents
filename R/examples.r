@@ -205,3 +205,30 @@ chat.example = function() {
   runEventsApp(app,ui=ui)
 }
 
+
+find.current.app.example = function() {
+  library(shinyEvents)
+  library(shinyAce)
+
+  app = eventsApp()
+  app$glob$txt = "Conversation so far"
+  app$id = 0
+  app$glob$id = 0
+  app$initHandler = function(session,app,...) {
+    app$glob$id = app$glob$id+1
+    app$id = app$glob$id
+  }
+  ui = fluidPage(
+    actionButton("btn","Click me"),
+    textOutput("out")
+  )
+
+  buttonHandler(NULL,"btn", function(...) {
+    session = getCurrentSession()
+    app = getApp(session)
+    txt = paste0("id = ", app$id,"  ", sample.int(10000,1))
+    updateText(session,"out",txt)
+  })
+  runEventsApp(app,ui=ui)
+}
+

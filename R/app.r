@@ -108,3 +108,8 @@ runEventsApp = function(app=getApp(),ui=NULL,...) {
 display = function(...) {
   cat(...)  
 }
+
+#' Get the current session object
+getCurrentSession =  function() {
+  getDefaultReactiveDomain()
+}
