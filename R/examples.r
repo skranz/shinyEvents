@@ -82,9 +82,9 @@ hotkey.shiny.events.example = function() {
 
 
 basic.shinyEvents.example = function() {
-  library(shiny)
+  library(shinyEvents)
 
-  app = eventsApp()
+  app = eventsApp(verbose=FALSE)
 
   # Main page
   ui = fluidPage(
@@ -146,7 +146,9 @@ basic.shinyEvents.example = function() {
     })
   })
 
-  runEventsApp(app,launch.browser=rstudio::viewer)
+  rapp = app
+  rm(app)
+  runEventsApp(rapp,launch.browser=rstudio::viewer)
 }
 
 

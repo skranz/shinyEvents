@@ -86,10 +86,12 @@ changeHandler = function(id, fun,...,app=getApp(), on.create=FALSE, if.handler.e
   
    ca = substitute(env=list(s_id=id, s_fun=fun,s_args=args, s_on.create=on.create),
     observe({
-      display("called event handler for ",s_id)
+      if (app$verbose)
+        display("called event handler for ",s_id)
       input[[s_id]]
       if (hasWidgetValueChanged(s_id, input[[s_id]], on.create=s_on.create)) {
-        display("run event handler for ",s_id)
+        if (app$verbose)
+          display(" run handler...")
         do.call(s_fun, c(list(id=s_id, value=input[[s_id]], session=session,app=app),s_args))
       }
     })
@@ -143,7 +145,8 @@ buttonHandler = function(id, fun,..., app = getApp(),if.handler.exists = c("repl
     observe({
       #browser()
       if (hasButtonCounterIncreased(s_id, input[[s_id]])) {
-        display(s_id, " has been clicked...")
+        if (app$verbose)
+          display(s_id, " has been clicked...")
         do.call(s_fun, c(list(id=s_id, value=input[[s_id]],
                               session=session,app=app),s_args))
       }

@@ -11,7 +11,7 @@
 .SHINY.EVENTS.ENV = new.env()
 
 #' Generate an empty shiny events app
-eventsApp = function(set.as.default=TRUE, verbose=FALSE, single.instance=FALSE) {
+eventsApp = function(set.as.default=TRUE, verbose=TRUE, single.instance=FALSE) {
   app = new.env()
   app$glob = new.env(parent=globalenv())
   app$single.instance = single.instance
@@ -22,7 +22,7 @@ eventsApp = function(set.as.default=TRUE, verbose=FALSE, single.instance=FALSE) 
   app$aceHotKeyRandNum = list()
   app$run.event.handlers=FALSE
   app$do.update = list()
-  app$verbose=TRUE
+  app$verbose=verbose
   app$output = list()
   app$trigger.list = list()
   app$collect.triggers = TRUE
@@ -32,9 +32,9 @@ eventsApp = function(set.as.default=TRUE, verbose=FALSE, single.instance=FALSE) 
   app$server = function(session, input, output) {  
     app = getApp()
     app$is.running = TRUE
+    cat(paste0("Started new session at ", Sys.time()))
     app = setAppSession(session,app)
     session = app$session
-    #browser()
     addEventHandlersToSession(app=app)
     app$initHandler(session=session, input=input, output=output, app=app)
   }
