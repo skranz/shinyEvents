@@ -236,3 +236,15 @@ wasAceHotkeyPressed = function(keyId, value, app = getApp()) {
   was.pressed = !identical(value$randNum, old.rand)
   was.pressed
 }
+
+#' Set a function that will be called when a new session of 
+#' an app is initialized
+#' 
+#'  @param initHandler a function that takes parameters
+#'    session, input, output and app. It will be called from
+#'    the app$server function whenever a new session is created.
+#'    It allows to initialize session specific variables and e.g.
+#'    store them within the app object.    
+appInitHandler = function(initHandler,app=getApp()) {
+  app$initHandler = initHandler()
+}

@@ -84,7 +84,6 @@ hotkey.shiny.events.example = function() {
 basic.shinyEvents.example = function() {
   library(shiny)
 
-
   app = eventsApp()
 
   # Main page
@@ -92,7 +91,7 @@ basic.shinyEvents.example = function() {
     actionButton("textBtn", "text"),
     actionButton("plotBtn", "plot"),
     actionButton("uiBtn", "ui"),
-    actionButton("handlerBtn", "make handler"),
+    actionButton("handlerBtn", "handler for later"),
     actionButton("laterBtn", "later"),
     selectInput("varInput", "Variable:",
         c("Cylinders" = "cyl",
@@ -100,61 +99,52 @@ basic.shinyEvents.example = function() {
           "Gears" = "gear")
     ),
     textOutput("myText"),
-    plotOutput("myPlot"),
-    uiOutput('myUI')
+    uiOutput('myUI'),
+    plotOutput("myPlot")
   )
   setAppUI(ui)
 
-  buttonHandler("handlerBtn", function(...) {
-    setText("myText", paste0("handler Button ", sample(1:1000,1)))
+  buttonHandler("textBtn", function(session, id, value, ...) {
+    setText("myText", paste0("You pressed the button ",id," ", value," times. "))
+  })
+  
+  buttonHandler("plotBtn", function(...) {
+    setText("myText", "Show random plot...")
+    setPlot("myPlot", plot(runif(10), runif(10)))    
+  })
 
-    buttonHandler("laterBtn", function(...) {
-      cat("buttonHandler laterBtn")
-      setText("myText", paste0("now we rock!! ", sample(1:1000,1)))
+  # handler for change of an input value
+  changeHandler("varInput",on.create=TRUE, function(id, value,...) {
+    setText("myText",paste0("You chose the list item ", value,". ", 
+                            "A random number: ", sample(1:1000,1)))
+  })
+
+  # A button handler that dynamically generates another handler
+  buttonHandler("handlerBtn", function(value,...) {
+    setText("myText", paste0("made handler ", value, " for later button."))
+    buttonHandler("laterBtn", maker.value = value, function(maker.value,...) {
+      setText("myText", paste0("Maker value: ", maker.value,
+                               " Random number: ", sample(1:1000,1)))
     })
   })
 
-  # user changes value of an input
-  changeHandler("varInput",on.create=!TRUE, function(id, value,...) {
-    setText("myText",paste0(value," ", sample(1:1000,1)))
-  })
-
-
-  text.button.handlers = function(id, value, ...) {
-    setText("myText", paste0("Hello world :",id," ", value," ", sample(1:1000,1)))
-  }
-  plot.button.handlers = function(id, value, ...) {
-    setText("myText", paste0("Hello world :",id," ", value," ",
-                sample(1:1000,1)))
-    library(ggplot2)
-    #p = qplot(mpg, wt, data=mtcars)
-    #setPlot("myPlot", p)
-    setPlot("myPlot", plot(runif(10)))
-  }
-
+  
   num = 1
-  # Dynamical UI that will be shown
-  dynUI= fluidRow(
-    actionButton("dynBtn", paste0("dynamic ", num)),
-    actionButton("waitBtn", paste0("wait ", num))
-  )
-
-
-  buttonHandler("textBtn", text.button.handlers)
-  buttonHandler("plotBtn", plot.button.handlers)
-  buttonHandler("uiBtn", function(session,...) {
+  # Dynamically create UI with button and add handler for it
+  buttonHandler("uiBtn", function(session, value,...) {
+    
+    # Set a new dynamic UI
+    dynUI= fluidRow(
+      actionButton("dynBtn", paste0("Created button ",value))
+    )
     setUI("myUI", dynUI)
-  })
-  buttonHandler("dynBtn", function(session,...) {
-    setText("myText", paste0("dynamic ", sample(1:1000,1)))
-
-    buttonHandler("waitBtn", function(session,...) {
-      setText("myText", paste0("now we rock!! ", sample(1:1000,1)))
+    
+    # Add handlers for the new button in the UI.
+    # Existing handlers for dynBtn are by default replaced
+    buttonHandler("dynBtn", function(value,...) {
+      setText("myText", paste0("Dynamic button pressed ", value, " times."))
     })
   })
-
-  # user presses a key
-  #add.hotkey.handler("varInput", fun_name)
 
   runEventsApp(app,launch.browser=rstudio::viewer)
 }

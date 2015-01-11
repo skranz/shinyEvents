@@ -95,7 +95,11 @@ setUI <- function (id, ui, app = getApp(),...) {
 #' 
 #' Similar to updatePlot but no need to provide session object
 setPlot = function(id, expr, app=getApp(), update.env=parent.frame(),...) {
-  updatePlot(session=app$session,id, expr,app=app, update.env=update.env,...)  
+  if (app$verbose)
+    cat("\n updatePlot: ", id)
+  expr.object = substitute(expr)
+  app$output[[id]] <- renderPlot(env=update.env, quoted=TRUE, expr=expr.object)
+  #updatePlot(session=app$session,id, expr,app=app, update.env=update.env,...)  
 }
 
 # #' update an aceEditor object.

@@ -29,8 +29,9 @@ eventsApp = function(set.as.default=TRUE, verbose=FALSE, single.instance=FALSE) 
   
   app$initHandler = function(...) {}
   
-  app$server = function(session, input, output) {
+  app$server = function(session, input, output) {  
     app = getApp()
+    app$is.running = TRUE
     app = setAppSession(session,app)
     session = app$session
     #browser()
@@ -109,8 +110,8 @@ runEventsApp = function(app=getApp(),ui=NULL,...) {
   #add.ui.renderer(app=app)
   if (!is.null(ui))
     setAppUI(ui=ui, app=app)
-  
-  app$is.running = TRUE
+  setApp(app)
+  #app$is.running = TRUE
   runApp(list(ui=app$ui, server=app$server),...)
   #app$is.running = FALSE  
 }
