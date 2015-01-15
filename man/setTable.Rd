@@ -3,7 +3,7 @@
 \alias{setTable}
 \title{Update an tableOutput object. Can be used instead of renderTable}
 \usage{
-setTable(id, val, app = getApp(), ...)
+setTable(id, value, app = getApp(), ...)
 }
 \description{
 Similar to updateTable but no need to provide session object

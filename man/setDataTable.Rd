@@ -3,7 +3,7 @@
 \alias{setDataTable}
 \title{Update an dataTableOutput object.}
 \usage{
-setDataTable(id, val, update.env = parent.frame(), app = getApp(), ...)
+setDataTable(id, value, update.env = parent.frame(), app = getApp(), ...)
 }
 \description{
 Can be used instead of renderDataTable.

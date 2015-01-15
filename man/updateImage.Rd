@@ -3,7 +3,7 @@
 \alias{updateImage}
 \title{Update an output object. Can be used instead of renderImage}
 \usage{
-updateImage(session = NULL, id, val, app = getApp(session), ...)
+updateImage(session = NULL, id, value, app = getApp(session), ...)
 }
 \description{
 Update an output object. Can be used instead of renderImage

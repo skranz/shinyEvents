@@ -3,7 +3,7 @@
 \alias{setText}
 \title{Update an textOutput object. Can be used instead of renderText}
 \usage{
-setText(id, val, app = getApp(), ...)
+setText(id, value, app = getApp(), ...)
 }
 \description{
 Similar to updateText but no need to provide session object

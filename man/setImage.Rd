@@ -3,7 +3,7 @@
 \alias{setImage}
 \title{Update an output object. Can be used instead of renderImage}
 \usage{
-setImage(id, val, app = getApp(), ...)
+setImage(id, value, app = getApp(), ...)
 }
 \description{
 Similar to updateImage but no need to provide session object

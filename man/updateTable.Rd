@@ -3,7 +3,7 @@
 \alias{updateTable}
 \title{Update an tableOutput object. Can be used instead of renderTable}
 \usage{
-updateTable(session = NULL, id, val, app = getApp(session), ...)
+updateTable(session = NULL, id, value, app = getApp(session), ...)
 }
 \description{
 Update an tableOutput object. Can be used instead of renderTable
