@@ -3,27 +3,27 @@ hasUpdater = function(session=NULL,id, app=getApp(session)) {
 }
 
 #' Update an dataTableOutput object. Can be used instead of renderDataTable
-updateDataTable = function(session=NULL,id, val,app=getApp(session),...) {
-  app$output[[id]] <- renderDataTable(val,...)
+updateDataTable = function(session=NULL,id, value,app=getApp(session),...) {
+  app$output[[id]] <- renderDataTable(value,...)
 }
 
 #' Update an output object. Can be used instead of renderImage
-updateImage = function(session=NULL,id, val,app=getApp(session),...) {
-  app$output[[id]] <- renderImage(val,...)
+updateImage = function(session=NULL,id, value,app=getApp(session),...) {
+  app$output[[id]] <- renderImage(value,...)
 }
 
 #' Update an textOutput object. Can be used instead of renderPrint
 updatePrint = function(session=NULL,id, expr, app=getApp(session), ...) {
-  app$output[[id]] <- renderPrint(val,...)}
+  app$output[[id]] <- renderPrint(value,...)}
 
 #' Update an tableOutput object. Can be used instead of renderTable
-updateTable = function(session=NULL,id, val, app=getApp(session),...) {
-  app$output[[id]] <- renderTable(val,...)
+updateTable = function(session=NULL,id, value, app=getApp(session),...) {
+  app$output[[id]] <- renderTable(value,...)
 }
 
 #' Update an textOutput object. Can be used instead of renderText
-updateText = function(session=NULL,id, val, app=getApp(session),...) {
-  app$output[[id]] <- renderText(val,...)
+updateText = function(session=NULL,id, value, app=getApp(session),...) {
+  app$output[[id]] <- renderText(value,...)
 }
 
 #' Update an uiOutput object. Can be used instead of renderUI
@@ -52,15 +52,15 @@ updatePlot = function(session=NULL,id, expr, app=getApp(session), update.env=par
 #' 
 #' Can be used instead of renderDataTable.
 #' Similar to updateDataTable but no need to provide session object
-setDataTable = function(id, val,update.env=parent.frame(), app=getApp(),...) {
-  updateDataTable(session=app$session, id=id, val=val, update.env=parent.frame(), app=app,...)
+setDataTable = function(id, value,update.env=parent.frame(), app=getApp(),...) {
+  updateDataTable(session=app$session, id=id, value=value, update.env=parent.frame(), app=app,...)
 }
 
 #' Update an output object. Can be used instead of renderImage
 #' 
 #' Similar to updateImage but no need to provide session object
-setImage = function(id, val,app=getApp(),...) {
-  updateImage(session=app$session,id, val,app=app,...)
+setImage = function(id, value,app=getApp(),...) {
+  updateImage(session=app$session,id, value,app=app,...)
 }
 
 #' Update an textOutput object. Can be used instead of renderPrint
@@ -73,15 +73,15 @@ setPrint = function(id, expr, app=getApp(), ...) {
 #' Update an tableOutput object. Can be used instead of renderTable
 #' 
 #' Similar to updateTable but no need to provide session object
-setTable = function(id, val, app=getApp(),...) {
-  updateTable(session=app$session,id, val,app=app,...)  
+setTable = function(id, value, app=getApp(),...) {
+  updateTable(session=app$session,id, value,app=app,...)  
 }
 
 #' Update an textOutput object. Can be used instead of renderText
 #' 
 #' Similar to updateText but no need to provide session object
-setText = function(id, val, app=getApp(),...) {
-  updateText(session=app$session,id, val,app=app,...)  
+setText = function(id, value, app=getApp(),...) {
+  updateText(session=app$session,id, value,app=app,...)  
 }
 
 #' Update an uiOutput object. Can be used instead of renderUI
@@ -101,12 +101,4 @@ setPlot = function(id, expr, app=getApp(), update.env=parent.frame(),...) {
   app$output[[id]] <- renderPlot(env=update.env, quoted=TRUE, expr=expr.object)
   #updatePlot(session=app$session,id, expr,app=app, update.env=update.env,...)  
 }
-
-# #' update an aceEditor object.
-# setAceEditor = function(editorId, value, theme, readOnly, mode, fontSize, 
-#     wordWrap, border = c("normal", "alert", "flash"), autoComplete = c("disabled", 
-#         "enabled", "live"), autoCompleteList = NULL, app=getApp(), ...) {
-# 
-#   updateAceEditor(session=app$session, editorId=editorId, value=value, theme=theme, readOnly=readOnly, mode=mode, fontSize=fontSize,wordWrap=wordWrap, border = border, autoComplete = autoComplete, autoCompleteList = autoCompleteList,...) 
-# }
 

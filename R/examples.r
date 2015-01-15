@@ -157,19 +157,22 @@ chat.example = function() {
   library(shinyAce)
 
   app = eventsApp()
+  
+  # app$glob can contain "global" variables that are visible
+  # for all sessions.
+  # app$glob$txt will be the content of the chat window
   app$glob$txt = "Conversation so far"
-  app$initHandler = function(session,...) {
-    setTextInput("userName",value=paste0("guest", sample.int(10000,1)) )
-    updateAceEditor(session,editorId = "convAce",value = app$glob$txt)
-  }
-  ui = fluidPage(
+  
+  app$ui = fluidPage(
     textInput("userName","User Name",""),
+    
+    # Chat window
     aceEditor("convAce",value = app$glob$txt, height="200px",showLineNumbers = FALSE, debounce=100),    
+    
+    # Enter new text
     aceEditor("enterAce",value = "Your text",height="30px",showLineNumbers = FALSE,debounce = 100,hotkeys = list(addTextKey="Ctrl-Enter")),
-    fluidRow(
-      actionButton("addBtn", "add"),
-      actionButton("refreshBtn", "refresh")
-    )
+    
+    actionButton("addBtn", "add")
   )
 
   addChatText = function(session,app,...) {
@@ -177,15 +180,15 @@ chat.example = function() {
     user = getInputValue("userName")
     str = getInputValue("enterAce")
     app$glob$txt = paste0(app$glob$txt,"\n",user, ": ",paste0(str,collapse="\n"))
-    #updateAceEditor(session, "enterAce", value = "")
-    updateAceEditor(session, "convAce", value = app$glob$txt)
+    updateAceEditor(session,"convAce", value = app$glob$txt)
+    updateAceEditor(session,"enterAce", value = " ")
   }
   
+  # Add chat text when button or Ctrl-Enter is pressed 
   buttonHandler(id="addBtn",addChatText)
   aceHotkeyHandler("addTextKey",addChatText)
-  buttonHandler(id="refreshBtn", function(session,app,...) {
-    updateAceEditor(session, "convAce", value = app$glob$txt)
-  })
+  
+  # refresh chat window each second
   timerHandler("refreshChatWindow",1000, function(session,app,...) {
     txt = getInputValue("convAce")
     if (!identical(txt, app$glob$txt)) {
@@ -193,8 +196,18 @@ chat.example = function() {
       updateAceEditor(session, "convAce", value = app$glob$txt)
     }
   })
-  app$handlers[["refreshChatWindow"]]
-  runEventsApp(app,ui=ui)
+  
+
+  # Initialize each new session with a random user name
+  appInitHandler(function(session,app,...) {
+    updateTextInput(session,"userName",
+                    value=paste0("guest", sample.int(10000,1)) )
+    updateAceEditor(session,editorId = "convAce",value = app$glob$txt)
+  })
+
+
+  runEventsApp(app, launch.browser=TRUE)
+  # To test chat function, open several browser tabs
 }
 
 

@@ -241,13 +241,14 @@ wasAceHotkeyPressed = function(keyId, value, app = getApp()) {
 }
 
 #' Set a function that will be called when a new session of 
-#' an app is initialized
+#' an app is initialized.
 #' 
 #'  @param initHandler a function that takes parameters
 #'    session, input, output and app. It will be called from
 #'    the app$server function whenever a new session is created.
 #'    It allows to initialize session specific variables and e.g.
-#'    store them within the app object.    
+#'    store them within the app object. The passed app object is already
+#'    the local copy created for the new session.    
 appInitHandler = function(initHandler,app=getApp()) {
-  app$initHandler = initHandler()
+  app$initHandler = initHandler
 }
