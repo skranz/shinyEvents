@@ -199,13 +199,25 @@ aceHotkeyHandler = function(id, fun,..., app = getApp(),if.handler.exists = c("r
 #' Checks whether the value of an input item has been changed (internal function)
 hasWidgetValueChanged = function(id, new.value,on.create=FALSE, app = getApp()) {
   restore.point("hasWidgetValueChanged")
+  #cat("\nid=",id)
+  #cat("\napp$values[[id]]=",app$values[[id]])
+  #cat("\nnew.value=",new.value)
+  
   if (!id %in% names(app$values)) {
-    app$values[[id]] = new.value
+    if (is.null(new.value)) {
+      app$values[id] = list(NULL)
+    } else {
+      app$values[[id]] = new.value
+    }
     changed = on.create
   } else {
     changed = !identical(app$values[[id]],new.value)
     if (changed) {
-      app$values[[id]] = new.value
+      if (is.null(new.value)) {
+        app$values[id] = list(NULL)
+      } else {
+        app$values[[id]] = new.value
+      }
     }
   }
   return(changed)

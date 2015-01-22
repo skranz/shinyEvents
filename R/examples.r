@@ -242,8 +242,10 @@ selectize.example = function() {
 
   app = eventsApp()
 
+  li = as.list(1:5)
+  names(li) = paste0("item:", 1:5)
   app$ui = fluidPage(
-    selectizeInput("mult","Choose multiple", choices = 1:5, multiple=TRUE),
+    selectizeInput("mult","Choose multiple", choices = li, selected=NULL, multiple=TRUE),
     textOutput("text")
   )
   changeHandler("mult", function(app, value,...) {
