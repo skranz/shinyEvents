@@ -236,3 +236,24 @@ find.current.app.example = function() {
   runEventsApp(app,ui=ui)
 }
 
+selectize.example = function() {
+  library(shinyEvents)
+  set.restore.point.options(display.restore.point = TRUE)
+
+  app = eventsApp()
+
+  app$ui = fluidPage(
+    selectizeInput("mult","Choose multiple", choices = 1:5, multiple=TRUE),
+    textOutput("text")
+  )
+  changeHandler("mult", function(app, value,...) {
+    restore.point("mult.changeHandler")
+    #browser()
+    print(value)
+    val = getInputValue("mult")
+    print(val)
+    setText("text", paste0(value, collapse=","))
+  })
+  runEventsApp(app)
+}
+
