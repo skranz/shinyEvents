@@ -31,10 +31,6 @@ devtools::install_github(repo="skranz/restorepoint")
 devtools::install_github(repo="skranz/shinyEvents")
 ```
 
-```r
-knitr:knit()
-```
-
 
 ## Examples
 
