@@ -1,3 +1,10 @@
+---
+output:
+  html_document:
+    highlight: textmate
+    keep_md: yes
+    toc: yes
+---
 
 # shinyEvents: build shiny apps with event handlers
 
@@ -15,9 +22,18 @@ The shinyEvents package allows to write shiny applications that use classical ev
 
 ## Installation
 
-To install the package see the description on the package's Github page:
+To install the package run the following code:
 
-[https://github.com/skranz/shinyEvents](https://github.com/skranz/shinyEvents)
+```r
+if (!require(devtools)) install.packages("devtools")
+
+devtools::install_github(repo="skranz/restorepoint")
+devtools::install_github(repo="skranz/shinyEvents")
+```
+
+```r
+knitr:knit()
+```
 
 
 ## Examples
@@ -168,7 +184,7 @@ The code below generates a small chat application as a shiny events app in which
   
 
   # Initialize each new session with a random user name
-  appInitHandler(function(session,app,...) {
+  appInitHandler(function(input, output, session,app,...) {
     updateTextInput(session,"userName",
                     value=paste0("guest", sample.int(10000,1)) )
     updateAceEditor(session,editorId = "convAce",value = app$glob$txt)
@@ -185,7 +201,7 @@ We use some new handlers in this example:
   
   - `timerHandler(...)` specifies a function that will be called in fixed time intervals
   
-  - `appInitHandler(...)` specifies a function to customize a newly initiated session of the app
+  - `appInitHandler(...)` specifies a function to customize a newly initiated session of the app. When using R Studio's functionality to run apps, you may have to leave out the argument `app` in the function passed to `appInitHandler`.
 
 The app object has a field `glob` that can be used to store variables that will be shared among sessions. (Of course, you could alternatively just use a global variable directly in R.)
 
@@ -245,6 +261,8 @@ changeHandler("mySelect", function(id, value,...) {
 setText("myText","This is the start text...")
 ```
 
+Beware:
 
+  - Don't manually overwrite `app$server`. The server function will be created when creating a new app with `eventsApp()`. It contains code that is neccessary for running the app. If you want to add manual code when initializing the app, call the function `appInitHandler` as illustrated in the previous example. When using R Studio's functionality to run apps, you may have to leave out the argument `app` in the function passed to `appInitHandler`.
 
 
