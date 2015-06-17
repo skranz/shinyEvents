@@ -29,21 +29,34 @@ updateText = function(session=NULL,id, value, app=getApp(session),...) {
 #' Update an uiOutput object. Can be used instead of renderUI
 updateUI <- function (session, id, ui, app = getApp(session),...) 
 {
+    
     restore.point("updateUI")
+    #cat("\nstart updateUI\n")
     if (app$verbose) 
         cat("\n updateUI: ", id)
-    app$output[[id]] <- renderUI(ui,...)
+    res = try(
+      app$output[[id]] <- renderUI({
+        cat("\ncalled renderUI:")
+        cat("\n",as.character(ui))
+        ui
+      },...)
+    )
+    
+    #cat("\nend updateUI\n")
 }
 
 
 #' update an plotOutput object. Can be used instead of renderPlot.
-updatePlot = function(session=NULL,id, expr, app=getApp(session), update.env=parent.frame()) {
+updatePlot = function(session=NULL,id, expr, app=getApp(session), update.env=parent.frame(),quoted=FALSE) {
   # Note: code is much simpler than other update code
   # Maybe we can always use this code
   if (app$verbose)
     cat("\n updatePlot: ", id)
-
-  expr.object = substitute(expr)
+  if (!quoted) {
+    expr.object = substitute(expr)
+  } else {
+    expr.object = expr
+  }
   app$output[[id]] <- renderPlot(env=update.env, quoted=TRUE, expr=expr.object)
 }
 
@@ -94,10 +107,14 @@ setUI <- function (id, ui, app = getApp(),...) {
 #' update an plotOutput object. Can be used instead of renderPlot.
 #' 
 #' Similar to updatePlot but no need to provide session object
-setPlot = function(id, expr, app=getApp(), update.env=parent.frame(),...) {
+setPlot = function(id, expr, app=getApp(), update.env=parent.frame(),quoted=FALSE,...) {
   if (app$verbose)
     cat("\n updatePlot: ", id)
-  expr.object = substitute(expr)
+  if (!quoted) {
+    expr.object = substitute(expr)
+  } else {
+    expr.object = expr
+  }
   app$output[[id]] <- renderPlot(env=update.env, quoted=TRUE, expr=expr.object)
   #updatePlot(session=app$session,id, expr,app=app, update.env=update.env,...)  
 }
