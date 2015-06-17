@@ -1,3 +1,114 @@
+gotcha.example = function() {
+  library(shiny)
+  # Create one button per person
+  persons = list(
+    peter=list(id=1,name="Peter"),
+    paul=list(id=2,name="Paul")
+  )
+  btn.li = lapply(persons, function(person) {
+    id = paste0("btn_",person$id)
+    actionButton(id,label = person$name)
+  })
+  #names(btn.li) = NULL
+  btn.row = do.call(fluidRow,btn.li)
+
+  
+  ui = fluidPage(
+    title = 'Gotcha Example',
+    btn.row,
+    textOutput("mytext")
+  )
+  
+  server = function(input, output, session) {
+    output$mytext <- renderText({
+      num = input$btn_1+input$btn_2
+      txt = paste0("You pressed ", num, " times a button")
+      txt
+    })
+  }
+  runApp(list(ui=ui,server=server),launch.browser=rstudio::viewer) 
+  
+}
+
+plot.example = function() {
+  library(knitr)
+  library(markdown)
+  library(shiny)
+  library(shinyEvents)
+  ui = fluidPage(
+    title = 'Plot Examples',
+    plotOutput("myplot"),
+    actionButton("btn","show")
+  )
+  server = function(input, output, session) {
+    output$myplot <- renderPlot({
+      plot(runif(100),runif(100))
+    })
+  }
+
+  runApp(list(ui=ui,server=server),launch.browser=rstudio::viewer) 
+  
+  app = eventsApp()
+  app$ui = fluidPage(
+    title = 'Plot Examples',
+    uiOutput("myui"),
+    actionButton("btn","show")
+  )
+  setUI("myui", plotOutput("myplot"))
+  setPlot("myplot",plot(runif(100),runif(100)))
+  runEventsApp(app,launch.browser=rstudio::viewer)
+
+}
+
+
+html.example = function() {
+  library(knitr)
+  library(markdown)
+  library(shiny)
+
+  stxt = 
+    '```{r "static_chunk", eval=TRUE, collapse=TRUE,comment=NA}
+    # I am a static chunk
+    T = 10
+    x = 1:T
+    y = x+rnorm(T)
+
+    summary(lm(y~x))
+
+
+    ```'
+  dtxt = 
+    '```{r "dynamic_chunk", eval=TRUE, collapse=TRUE,comment=NA}
+    # I am a dynamic chunk
+    1:5
+    "Hello"
+
+    T = 10
+    x = 1:T
+    y = x+rnorm(T)
+
+    summary(lm(y~x))
+
+    ```'
+  ui = fluidPage(
+    title = 'Knitr Examples',
+    HTML(knitr::knit2html(text=stxt)),
+    uiOutput('ex1')
+  )
+  server = function(input, output, session) {
+    output$ex1 <- renderUI({
+      dhtml = knitr::knit2html(text=dtxt)
+      dhtml = paste0(dhtml,
+"\n<script>$('#ex1 pre code').each(function(i, e) {hljs.highlightBlock(e)});</script>")
+      HTML(dhtml)
+    })
+  }
+
+  runApp(list(
+    ui=ui,
+    server=server))  
+}
+
 
 nested.ui.example = function() {
   library(shinyEvents)
@@ -258,4 +369,37 @@ selectize.example = function() {
   })
   runEventsApp(app)
 }
+
+
+panel.no.update.example = function() {
+
+  ui.left = fluidRow(
+    textInput("textInput",label = "Text:",value = "Choice A"),
+    actionButton("setBtn",label = "Set right")
+  )
+  ui.right = fluidRow(
+    selectInput("selectInput",label = "Text:",choices = list())
+  )
+  
+  ui = fluidPage(title = "PanelTest",
+    tabsetPanel(id="panels",
+      tabPanel("Left",ui.left,value="leftTab"),
+      tabPanel("Right",uiOutput("rightUI"),value="rightTab")
+    )                  
+  )
+  server = function(session, input, output,...) {
+    output$rightUI <- renderUI({
+      cat("Render rightUI")
+      ui.right
+    })
+    observeEvent(input$setBtn, {
+      cat("Btn was pressed.")
+      txt = isolate(input$textInput)
+      updateSelectInput(session,inputId = "selectInput",choices = as.list(txt))
+    })
+  }
+  runApp(list(ui=ui,server=server), launch.browser=rstudio::viewer)
+
+}
+
 
