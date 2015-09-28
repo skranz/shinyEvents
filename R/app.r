@@ -55,6 +55,7 @@ setApp = function(app) {
 #' corresponding to the current session
 getApp = function(session=NULL) {
   gapp = .SHINY.EVENTS.ENV$app
+  if (is.null(gapp)) return(NULL)
   if (is.null(session)) {
     if (gapp$is.running)
       session = getCurrentSession()

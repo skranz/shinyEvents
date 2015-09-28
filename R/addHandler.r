@@ -80,7 +80,6 @@ changeHandler = function(id, fun,...,app=getApp(), on.create=FALSE, if.handler.e
   if (app$verbose)
     display("\nadd changeHandler for ",id)
 
-  fun = substitute(fun)
   # Create dynamic observer
   args = list(...)
   
@@ -92,7 +91,8 @@ changeHandler = function(id, fun,...,app=getApp(), on.create=FALSE, if.handler.e
       if (hasWidgetValueChanged(s_id, input[[s_id]], on.create=s_on.create)) {
         if (app$verbose)
           display(" run handler...")
-        do.call(s_fun, c(list(id=s_id, value=input[[s_id]], session=session,app=app),s_args))
+        myfun = s_fun
+        do.call(myfun, c(list(id=s_id, value=input[[s_id]], session=session,app=app),s_args))
       }
     })
   )
@@ -111,7 +111,6 @@ timerHandler = function(id,intervalMs, fun,...,app=getApp(), on.create=FALSE, if
   if (verbose)
     display("\nadd timerHandler ",id)
 
-  fun = substitute(fun)
   # Create dynamic observer
   args = list(...)
   
@@ -120,7 +119,8 @@ timerHandler = function(id,intervalMs, fun,...,app=getApp(), on.create=FALSE, if
       if (s_verbose)
         display("\ncalled timer handler ",s_id)
       cURReNTTime = app$handlers[[s_id]]$timer()
-      do.call(s_fun, c(list(id=s_id, value=cURReNTTime, session=session,app=app),s_args))
+      myfun = s_fun
+      do.call(myfun, c(list(id=s_id, value=cURReNTTime, session=session,app=app),s_args))
     })
   )
   
@@ -137,17 +137,19 @@ buttonHandler = function(id, fun,..., app = getApp(),if.handler.exists = c("repl
   
   if (app$verbose)
     display("\nadd buttonHandler for ",id)
-  
-  fun = substitute(fun)
+
   args = list(...)
 
+  #restore.point("buttonHandler")
+  
   ca = substitute(env=list(s_id=id, s_fun=fun,s_args=args),
     observe({
       #browser()
       if (hasButtonCounterIncreased(s_id, input[[s_id]])) {
         if (app$verbose)
           display(s_id, " has been clicked...")
-        do.call(s_fun, c(list(id=s_id, value=input[[s_id]],
+        myfun = s_fun
+        do.call(myfun, c(list(id=s_id, value=input[[s_id]],
                               session=session,app=app),s_args))
       }
     })
@@ -173,8 +175,7 @@ aceHotkeyHandler = function(id, fun,..., app = getApp(),if.handler.exists = c("r
   
   if (app$verbose)
     display("\nadd aceHotkeyHandler for ",id)
-  
-  fun = substitute(fun)
+
   args = list(...)
 
   ca = substitute(env=list(s_id=id, s_fun=fun,s_args=args),
@@ -187,7 +188,8 @@ aceHotkeyHandler = function(id, fun,..., app = getApp(),if.handler.exists = c("r
         text = isolate(input[[res$editorId]])
         li = c(list(keyId=s_id),res,
                list(text=text,session=session,app=app),s_args)
-        do.call(s_fun,li)
+        myfun = s_fun
+        do.call(myfun,li)
       }
     })
   )

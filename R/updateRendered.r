@@ -4,7 +4,11 @@ hasUpdater = function(session=NULL,id, app=getApp(session)) {
 
 #' Update an dataTableOutput object. Can be used instead of renderDataTable
 updateDataTable = function(session=NULL,id, value,app=getApp(session),...) {
-  app$output[[id]] <- renderDataTable(value,...)
+  if (require(DT)) {
+    app$output[[id]] <- DT::renderDataTable(value,...)
+  } else {
+    app$output[[id]] <- renderDataTable(value,...)
+  }
 }
 
 #' Update an output object. Can be used instead of renderImage
@@ -36,8 +40,8 @@ updateUI <- function (session, id, ui, app = getApp(session),...)
         cat("\n updateUI: ", id)
     res = try(
       app$output[[id]] <- renderUI({
-        cat("\ncalled renderUI:")
-        cat("\n",as.character(ui))
+        #cat("\ncalled renderUI:")
+        #cat("\n",as.character(ui))
         ui
       },...)
     )
@@ -65,8 +69,8 @@ updatePlot = function(session=NULL,id, expr, app=getApp(session), update.env=par
 #' 
 #' Can be used instead of renderDataTable.
 #' Similar to updateDataTable but no need to provide session object
-setDataTable = function(id, value,update.env=parent.frame(), app=getApp(),...) {
-  updateDataTable(session=app$session, id=id, value=value, update.env=parent.frame(), app=app,...)
+setDataTable = function(id, value, app=getApp(),...) {
+  updateDataTable(session=app$session, id=id, value=value, app=app,...)
 }
 
 #' Update an output object. Can be used instead of renderImage
