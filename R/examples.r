@@ -12,10 +12,11 @@ jsclick.example = function() {
       p("Click on the text!")
     )
   )
-  jsclickHandler("mydiv", function(app,id,...) {
+  jsclickHandler("mydiv",x = 50, function(app,id,...) {
     restore.point("inclickhandler")
     toggleClass(id, "blue")
-    cat("click")
+    cat("\nclick")
+    cat("x = ",x)
   })
   viewApp()
 }

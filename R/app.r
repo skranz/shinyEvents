@@ -118,6 +118,7 @@ runEventsApp = function(app=getApp(),ui=NULL,...) {
   if (!is.null(ui))
     setAppUI(ui=ui, app=app)
   setApp(app)
+  on.exit(app$is.running <- FALSE)
   #app$is.running = TRUE
   runApp(list(ui=app$ui, server=app$server),...)
   #app$is.running = FALSE  
