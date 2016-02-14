@@ -12,11 +12,13 @@ jsclick.example = function() {
       p("Click on the text!")
     )
   )
-  jsclickHandler("mydiv",x = 230, function(app,id,x,...) {
+  y=list(k=12,env=as.environment(list(a=5)))
+  jsclickHandler("mydiv",x = 230, y= y,  function(app,id,x,y,...) {
     restore.point("inclickhandler")
     toggleClass(id, "blue")
     cat("\nclick")
     cat("x = ",x)
+    cat(y$env$a)
   })
   h = app$handlers[[1]]
   h
