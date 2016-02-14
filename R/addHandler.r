@@ -16,8 +16,8 @@ resetEventHandlers = function(app = getApp()) {
 addEventHandlersToSession = function(session.env=app$session.env, app=getApp()) {
   restore.point("addEventHandlersToSession")
   for (i in seq_along(app$handlers)) {
-    app$handlers[[i]]$call.env = initHandlerCallEnv(app$handlers[[i]]$call.env, session.env)
-    app$handlers[[i]]$observer = eval(app$handlers[[i]]$call, app$handlers[[i]]$call.env)
+    #app$handlers[[i]]$call.env = initHandlerCallEnv(app$handlers[[i]]$call.env, session.env)
+    app$handlers[[i]]$observer = eval(app$handlers[[i]]$call, session.env)
   }
 }
 
@@ -70,16 +70,16 @@ addEventHandlerToApp = function(id, call, type="unknown", app = getApp(),session
     app$handlers[[n]] = list(id=id, call=call, type=type, observer=NULL, call.env=call.env)
     names(app$handlers)[n] <- id
     if (app$is.running) {
-      app$handlers[[i]]$call.env = initHandlerCallEnv(call.env, session.env)      
-      app$handlers[[n]]$observer = eval(call,app$handlers[[i]]$call.env)
+      #app$handlers[[i]]$call.env = initHandlerCallEnv(call.env, session.env)      
+      app$handlers[[n]]$observer = eval(call,session.env)
     }
   } else if (if.handler.exists=="replace") {
     if (!is.null(app$handlers[[id]]))
       destroyHandlerObserver(id,app=app)
     app$handlers[[id]] = list(id=id, call=call, type=type, observer=NULL, call.env=call.env)
     if (app$is.running) {
-      app$handlers[[i]]$call.env = initHandlerCallEnv(call.env, session.env)      
-      app$handlers[[n]]$observer = eval(call,app$handlers[[i]]$call.env)
+      #app$handlers[[i]]$call.env = initHandlerCallEnv(call.env, session.env)      
+      app$handlers[[n]]$observer = eval(call,session.env)
     }
 
   } else {
@@ -106,14 +106,14 @@ jsclickHandler = function(id, fun,..., app = getApp(),if.handler.exists = c("rep
   add = (if.handler.exists=="add")
   
   restore.point("jsclickHandler")
-  ca = substitute(env=list(s_id=id, s_fun=fun,add=add),
+  ca = substitute(env=list(s_id=id, s_fun=fun,add=add,args=args),
     shinyjs::onclick(s_id,add=add,expr={
       myfun = s_fun
       do.call(myfun, c(list(id=s_id,app=getApp()),args))
     })
   )
-  call.env = as.environment(args)
-  addEventHandlerToApp(id=id,call=ca,type="jsclick",app=app, if.handler.exists=if.handler.exists, call.env=call.env)
+  #call.env = as.environment(args)
+  addEventHandlerToApp(id=id,call=ca,type="jsclick",app=app, if.handler.exists=if.handler.exists)
 }
 
 
