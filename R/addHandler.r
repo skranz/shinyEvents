@@ -20,24 +20,36 @@ addEventHandlersToSession = function(session.env=app$session.env, app=getApp()) 
   }
 }
 
+destroyHandlerObserver = function(ind, app = getApp()) {
+  if (app$is.running) {
+    for (i in ind) {
+      type = app$handlers[[i]]$type
+      if (type =="jsclick") {
+        onclick(handlers[[i]]$id, {}, add=FALSE)
+      } else if (type == "jsevent") {
+        onevent(handlers[[i]]$id, {}, add=FALSE)
+      } else {
+        if (is.function(app$handlers[[i]]$observer))
+          try(app$handlers[[i]]$observer$destroy())
+      }
+    }
+  }
+  
+}
+
 removeEventHandler = function(id, ind, app = getApp()) {
   #cat("\nremoveEventHandler")
-
   if (!missing(id)) {
     ind = which(names(app$handlers) %in% id)
   }
-
-  if (app$is.running) {
-    for (i in ind) {
-      app$handlers[[i]]$observer$destroy()    
-    }
-  }
+  destroyHandlerObserver(ind, app=app)
   if (length(ind)>0) {
     app$handlers = app$handlers[-ind]
   }
   #cat("\nend removeEventHandler")
-
 }
+
+
 
 addEventHandlerToApp = function(id, call, type="unknown", app = getApp(),session.env=app$session.env, if.handler.exists = c("replace","add","skip")[1], intervalMs=NULL, session=getAppSession(app)) {
   #restore.point("addEventHandlerToApp")
@@ -51,11 +63,8 @@ addEventHandlerToApp = function(id, call, type="unknown", app = getApp(),session
       app$handlers[[n]]$observer = eval(call,app$session.env)
     }
   } else if (if.handler.exists=="replace") {
-    if (app$is.running) {
-      if (is.function(app$handlers[[id]]$observer$destroy)) {
-        try(app$handlers[[id]]$observer$destroy())
-      }
-    }
+    if (!is.null(app$handlers[[id]]))
+      destroyHandlerObserver(id,app=app)
     app$handlers[[id]] = list(id=id, call=call, type=type, observer=NULL)
     if (app$is.running) {
       app$handlers[[id]]$observer = eval(call,app$session.env)
@@ -70,11 +79,36 @@ addEventHandlerToApp = function(id, call, type="unknown", app = getApp(),session
   }
 }
 
+#' Add an handler for an click event based on shinyjs::onclick
+#' 
+#' @param id name of the input element
+#' @param fun function that will be called if the input value changes. The function will be called with the arguments: 'id', 'value' and 'session'. One can assign the same handler functions to several input elements.
+#' @param ... extra arguments that will be passed to fun when the event is triggered.
+jsclickHandler = function(id, fun,..., app = getApp(),if.handler.exists = c("replace","add","skip")[1], session=getAppSession(app)) {
+
+  if (isTRUE(app$verbose))
+    display("\nadd jsclickHandler for ",id)
+
+  args = list(...)
+
+  add = (if.handler.exists=="add")
+  
+  restore.point("jsclickHandler")
+  ca = substitute(env=list(s_id=id, s_fun=fun,s_args=args,add=add),
+    shinyjs::onclick(s_id,add=add,expr={
+      myfun = s_fun
+      do.call(myfun, c(list(id=s_id, value=input[[s_id]],session=session,app=app),s_args))
+    })
+  )
+  addEventHandlerToApp(id=id,call=ca,type="jsclick",app=app, if.handler.exists=if.handler.exists)
+}
+
+
 #' Add an handler to an input that is called when the input value changes
 #' 
 #' @param id name of the input element
 #' @param fun function that will be called if the input value changes. The function will be called with the arguments: 'id', 'value' and 'session'. One can assign the same handler functions to several input elements.
-#' @param ... extra arguments that will be passed to fun when the event is triggered.  
+#' @param ... extra arguments that will be passed to fun when the event is triggered.
 changeHandler = function(id, fun,...,app=getApp(), on.create=FALSE, if.handler.exists = c("replace","add","skip")[1], session=getAppSession(app)) {
   #browser()
   if (app$verbose)

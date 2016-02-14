@@ -1,3 +1,25 @@
+jsclick.example = function() {
+  app = eventsApp()
+  library(shinyjs)
+  app$ui = fluidPage(
+    shinyjs::useShinyjs(),
+    inlineCSS(list(
+      .yellow = "background: #ffffaa",
+      .blue = "background: #aaaaff"
+    )),    
+    div(id="mydiv",
+      class="yellow",
+      p("Click on the text!")
+    )
+  )
+  jsclickHandler("mydiv", function(app,id,...) {
+    restore.point("inclickhandler")
+    toggleClass(id, "blue")
+    cat("click")
+  })
+  viewApp()
+}
+
 gotcha.example = function() {
   library(shiny)
   # Create one button per person

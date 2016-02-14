@@ -106,6 +106,12 @@ setAppUI = function(ui, app=getApp()) {
   app$ui = ui
 }
 
+#' view shiny events app in RStudio viewer
+viewApp = function(app=getApp(),ui=NULL,launch.browser=rstudio::viewer,...) {
+  runEventsApp(app,ui, launch.browser=launch.browser,...)
+}
+
+
 #' run shiny events app
 runEventsApp = function(app=getApp(),ui=NULL,...) {
   #add.ui.renderer(app=app)
