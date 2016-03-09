@@ -1,3 +1,143 @@
+jsclick.example = function() {
+  app = eventsApp()
+  library(shinyjs)
+  app$ui = fluidPage(
+    shinyjs::useShinyjs(),
+    inlineCSS(list(
+      .yellow = "background: #ffffaa",
+      .blue = "background: #aaaaff"
+    )),    
+    div(id="mydiv",
+      class="yellow",
+      p("Click on the text!")
+    )
+  )
+  y=list(k=12,env=as.environment(list(a=5)))
+  jsclickHandler("mydiv",x = 230, y= y,  function(app,id,x,y,...) {
+    restore.point("inclickhandler")
+    toggleClass(id, "blue")
+    cat("\nclick")
+    cat("x = ",x)
+    cat(y$env$a)
+  })
+  h = app$handlers[[1]]
+  h
+  as.list(h$call.env)
+  #eval(h$call, h$call.env)
+  viewApp()
+}
+
+gotcha.example = function() {
+  library(shiny)
+  # Create one button per person
+  persons = list(
+    peter=list(id=1,name="Peter"),
+    paul=list(id=2,name="Paul")
+  )
+  btn.li = lapply(persons, function(person) {
+    id = paste0("btn_",person$id)
+    actionButton(id,label = person$name)
+  })
+  #names(btn.li) = NULL
+  btn.row = do.call(fluidRow,btn.li)
+
+  
+  ui = fluidPage(
+    title = 'Gotcha Example',
+    btn.row,
+    textOutput("mytext")
+  )
+  
+  server = function(input, output, session) {
+    output$mytext <- renderText({
+      num = input$btn_1+input$btn_2
+      txt = paste0("You pressed ", num, " times a button")
+      txt
+    })
+  }
+  runApp(list(ui=ui,server=server),launch.browser=rstudio::viewer) 
+  
+}
+
+plot.example = function() {
+  library(knitr)
+  library(markdown)
+  library(shiny)
+  library(shinyEvents)
+  ui = fluidPage(
+    title = 'Plot Examples',
+    plotOutput("myplot"),
+    actionButton("btn","show")
+  )
+  server = function(input, output, session) {
+    output$myplot <- renderPlot({
+      plot(runif(100),runif(100))
+    })
+  }
+
+  runApp(list(ui=ui,server=server),launch.browser=rstudio::viewer) 
+  
+  app = eventsApp()
+  app$ui = fluidPage(
+    title = 'Plot Examples',
+    uiOutput("myui"),
+    actionButton("btn","show")
+  )
+  setUI("myui", plotOutput("myplot"))
+  setPlot("myplot",plot(runif(100),runif(100)))
+  runEventsApp(app,launch.browser=rstudio::viewer)
+
+}
+
+
+html.example = function() {
+  library(knitr)
+  library(markdown)
+  library(shiny)
+
+  stxt = 
+    '```{r "static_chunk", eval=TRUE, collapse=TRUE,comment=NA}
+    # I am a static chunk
+    T = 10
+    x = 1:T
+    y = x+rnorm(T)
+
+    summary(lm(y~x))
+
+
+    ```'
+  dtxt = 
+    '```{r "dynamic_chunk", eval=TRUE, collapse=TRUE,comment=NA}
+    # I am a dynamic chunk
+    1:5
+    "Hello"
+
+    T = 10
+    x = 1:T
+    y = x+rnorm(T)
+
+    summary(lm(y~x))
+
+    ```'
+  ui = fluidPage(
+    title = 'Knitr Examples',
+    HTML(knitr::knit2html(text=stxt)),
+    uiOutput('ex1')
+  )
+  server = function(input, output, session) {
+    output$ex1 <- renderUI({
+      dhtml = knitr::knit2html(text=dtxt)
+      dhtml = paste0(dhtml,
+"\n<script>$('#ex1 pre code').each(function(i, e) {hljs.highlightBlock(e)});</script>")
+      HTML(dhtml)
+    })
+  }
+
+  runApp(list(
+    ui=ui,
+    server=server))  
+}
+
 
 nested.ui.example = function() {
   library(shinyEvents)
@@ -82,17 +222,16 @@ hotkey.shiny.events.example = function() {
 
 
 basic.shinyEvents.example = function() {
-  library(shiny)
+  library(shinyEvents)
 
-
-  app = eventsApp()
+  app = eventsApp(verbose=FALSE)
 
   # Main page
   ui = fluidPage(
     actionButton("textBtn", "text"),
     actionButton("plotBtn", "plot"),
     actionButton("uiBtn", "ui"),
-    actionButton("handlerBtn", "make handler"),
+    actionButton("handlerBtn", "handler for later"),
     actionButton("laterBtn", "later"),
     selectInput("varInput", "Variable:",
         c("Cylinders" = "cyl",
@@ -100,63 +239,56 @@ basic.shinyEvents.example = function() {
           "Gears" = "gear")
     ),
     textOutput("myText"),
-    plotOutput("myPlot"),
-    uiOutput('myUI')
+    uiOutput('myUI'),
+    plotOutput("myPlot")
   )
   setAppUI(ui)
 
-  buttonHandler("handlerBtn", function(...) {
-    setText("myText", paste0("handler Button ", sample(1:1000,1)))
+  buttonHandler("textBtn", function(session, id, value, ...) {
+    setText("myText", paste0("You pressed the button ",id," ", value," times. "))
+  })
+  
+  buttonHandler("plotBtn", function(...) {
+    setText("myText", "Show random plot...")
+    setPlot("myPlot", plot(runif(10), runif(10)))    
+  })
 
-    buttonHandler("laterBtn", function(...) {
-      cat("buttonHandler laterBtn")
-      setText("myText", paste0("now we rock!! ", sample(1:1000,1)))
+  # handler for change of an input value
+  changeHandler("varInput",on.create=TRUE, function(id, value,...) {
+    setText("myText",paste0("You chose the list item ", value,". ", 
+                            "A random number: ", sample(1:1000,1)))
+  })
+
+  # A button handler that dynamically generates another handler
+  buttonHandler("handlerBtn", function(value,...) {
+    setText("myText", paste0("made handler ", value, " for later button."))
+    buttonHandler("laterBtn", maker.value = value, function(maker.value,...) {
+      setText("myText", paste0("Maker value: ", maker.value,
+                               " Random number: ", sample(1:1000,1)))
     })
   })
 
-  # user changes value of an input
-  changeHandler("varInput",on.create=!TRUE, function(id, value,...) {
-    setText("myText",paste0(value," ", sample(1:1000,1)))
-  })
-
-
-  text.button.handlers = function(id, value, ...) {
-    setText("myText", paste0("Hello world :",id," ", value," ", sample(1:1000,1)))
-  }
-  plot.button.handlers = function(id, value, ...) {
-    setText("myText", paste0("Hello world :",id," ", value," ",
-                sample(1:1000,1)))
-    library(ggplot2)
-    #p = qplot(mpg, wt, data=mtcars)
-    #setPlot("myPlot", p)
-    setPlot("myPlot", plot(runif(10)))
-  }
-
+  
   num = 1
-  # Dynamical UI that will be shown
-  dynUI= fluidRow(
-    actionButton("dynBtn", paste0("dynamic ", num)),
-    actionButton("waitBtn", paste0("wait ", num))
-  )
-
-
-  buttonHandler("textBtn", text.button.handlers)
-  buttonHandler("plotBtn", plot.button.handlers)
-  buttonHandler("uiBtn", function(session,...) {
+  # Dynamically create UI with button and add handler for it
+  buttonHandler("uiBtn", function(session, value,...) {
+    
+    # Set a new dynamic UI
+    dynUI= fluidRow(
+      actionButton("dynBtn", paste0("Created button ",value))
+    )
     setUI("myUI", dynUI)
-  })
-  buttonHandler("dynBtn", function(session,...) {
-    setText("myText", paste0("dynamic ", sample(1:1000,1)))
-
-    buttonHandler("waitBtn", function(session,...) {
-      setText("myText", paste0("now we rock!! ", sample(1:1000,1)))
+    
+    # Add handlers for the new button in the UI.
+    # Existing handlers for dynBtn are by default replaced
+    buttonHandler("dynBtn", function(value,...) {
+      setText("myText", paste0("Dynamic button pressed ", value, " times."))
     })
   })
 
-  # user presses a key
-  #add.hotkey.handler("varInput", fun_name)
-
-  runEventsApp(app,launch.browser=rstudio::viewer)
+  rapp = app
+  rm(app)
+  runEventsApp(rapp,launch.browser=rstudio::viewer)
 }
 
 
@@ -165,19 +297,22 @@ chat.example = function() {
   library(shinyAce)
 
   app = eventsApp()
+  
+  # app$glob can contain "global" variables that are visible
+  # for all sessions.
+  # app$glob$txt will be the content of the chat window
   app$glob$txt = "Conversation so far"
-  app$initHandler = function(session,...) {
-    setTextInput("userName",value=paste0("guest", sample.int(10000,1)) )
-    updateAceEditor(session,editorId = "convAce",value = app$glob$txt)
-  }
-  ui = fluidPage(
+  
+  app$ui = fluidPage(
     textInput("userName","User Name",""),
+    
+    # Chat window
     aceEditor("convAce",value = app$glob$txt, height="200px",showLineNumbers = FALSE, debounce=100),    
+    
+    # Enter new text
     aceEditor("enterAce",value = "Your text",height="30px",showLineNumbers = FALSE,debounce = 100,hotkeys = list(addTextKey="Ctrl-Enter")),
-    fluidRow(
-      actionButton("addBtn", "add"),
-      actionButton("refreshBtn", "refresh")
-    )
+    
+    actionButton("addBtn", "add")
   )
 
   addChatText = function(session,app,...) {
@@ -185,15 +320,15 @@ chat.example = function() {
     user = getInputValue("userName")
     str = getInputValue("enterAce")
     app$glob$txt = paste0(app$glob$txt,"\n",user, ": ",paste0(str,collapse="\n"))
-    #updateAceEditor(session, "enterAce", value = "")
-    updateAceEditor(session, "convAce", value = app$glob$txt)
+    updateAceEditor(session,"convAce", value = app$glob$txt)
+    updateAceEditor(session,"enterAce", value = " ")
   }
   
+  # Add chat text when button or Ctrl-Enter is pressed 
   buttonHandler(id="addBtn",addChatText)
   aceHotkeyHandler("addTextKey",addChatText)
-  buttonHandler(id="refreshBtn", function(session,app,...) {
-    updateAceEditor(session, "convAce", value = app$glob$txt)
-  })
+  
+  # refresh chat window each second
   timerHandler("refreshChatWindow",1000, function(session,app,...) {
     txt = getInputValue("convAce")
     if (!identical(txt, app$glob$txt)) {
@@ -201,8 +336,18 @@ chat.example = function() {
       updateAceEditor(session, "convAce", value = app$glob$txt)
     }
   })
-  app$handlers[["refreshChatWindow"]]
-  runEventsApp(app,ui=ui)
+  
+
+  # Initialize each new session with a random user name
+  appInitHandler(function(session,app,...) {
+    updateTextInput(session,"userName",
+                    value=paste0("guest", sample.int(10000,1)) )
+    updateAceEditor(session,editorId = "convAce",value = app$glob$txt)
+  })
+
+
+  runEventsApp(app, launch.browser=TRUE)
+  # To test chat function, open several browser tabs
 }
 
 
@@ -230,4 +375,60 @@ find.current.app.example = function() {
   })
   runEventsApp(app,ui=ui)
 }
+
+selectize.example = function() {
+  library(shinyEvents)
+  set.restore.point.options(display.restore.point = TRUE)
+
+  app = eventsApp()
+
+  li = as.list(1:5)
+  names(li) = paste0("item:", 1:5)
+  app$ui = fluidPage(
+    selectizeInput("mult","Choose multiple", choices = li, selected=NULL, multiple=TRUE),
+    textOutput("text")
+  )
+  changeHandler("mult", function(app, value,...) {
+    restore.point("mult.changeHandler")
+    #browser()
+    print(value)
+    val = getInputValue("mult")
+    print(val)
+    setText("text", paste0(value, collapse=","))
+  })
+  runEventsApp(app)
+}
+
+
+panel.no.update.example = function() {
+
+  ui.left = fluidRow(
+    textInput("textInput",label = "Text:",value = "Choice A"),
+    actionButton("setBtn",label = "Set right")
+  )
+  ui.right = fluidRow(
+    selectInput("selectInput",label = "Text:",choices = list())
+  )
+  
+  ui = fluidPage(title = "PanelTest",
+    tabsetPanel(id="panels",
+      tabPanel("Left",ui.left,value="leftTab"),
+      tabPanel("Right",uiOutput("rightUI"),value="rightTab")
+    )                  
+  )
+  server = function(session, input, output,...) {
+    output$rightUI <- renderUI({
+      cat("Render rightUI")
+      ui.right
+    })
+    observeEvent(input$setBtn, {
+      cat("Btn was pressed.")
+      txt = isolate(input$textInput)
+      updateSelectInput(session,inputId = "selectInput",choices = as.list(txt))
+    })
+  }
+  runApp(list(ui=ui,server=server), launch.browser=rstudio::viewer)
+
+}
+
 

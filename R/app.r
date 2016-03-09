@@ -11,7 +11,7 @@
 .SHINY.EVENTS.ENV = new.env()
 
 #' Generate an empty shiny events app
-eventsApp = function(set.as.default=TRUE, verbose=FALSE, single.instance=FALSE) {
+eventsApp = function(set.as.default=TRUE, verbose=TRUE, single.instance=FALSE) {
   app = new.env()
   app$glob = new.env(parent=globalenv())
   app$single.instance = single.instance
@@ -22,18 +22,19 @@ eventsApp = function(set.as.default=TRUE, verbose=FALSE, single.instance=FALSE) 
   app$aceHotKeyRandNum = list()
   app$run.event.handlers=FALSE
   app$do.update = list()
-  app$verbose=TRUE
+  app$verbose=verbose
   app$output = list()
   app$trigger.list = list()
   app$collect.triggers = TRUE
   
   app$initHandler = function(...) {}
   
-  app$server = function(session, input, output) {
+  app$server = function(session, input, output) {  
     app = getApp()
+    app$is.running = TRUE
+    cat(paste0("Started new session at ", Sys.time()))
     app = setAppSession(session,app)
     session = app$session
-    #browser()
     addEventHandlersToSession(app=app)
     app$initHandler(session=session, input=input, output=output, app=app)
   }
@@ -54,6 +55,7 @@ setApp = function(app) {
 #' corresponding to the current session
 getApp = function(session=NULL) {
   gapp = .SHINY.EVENTS.ENV$app
+  if (is.null(gapp)) return(NULL)
   if (is.null(session)) {
     if (gapp$is.running)
       session = getCurrentSession()
@@ -104,13 +106,20 @@ setAppUI = function(ui, app=getApp()) {
   app$ui = ui
 }
 
+#' view shiny events app in RStudio viewer
+viewApp = function(app=getApp(),ui=NULL,launch.browser=rstudio::viewer,...) {
+  runEventsApp(app,ui, launch.browser=launch.browser,...)
+}
+
+
 #' run shiny events app
 runEventsApp = function(app=getApp(),ui=NULL,...) {
   #add.ui.renderer(app=app)
   if (!is.null(ui))
     setAppUI(ui=ui, app=app)
-  
-  app$is.running = TRUE
+  setApp(app)
+  on.exit(app$is.running <- FALSE)
+  #app$is.running = TRUE
   runApp(list(ui=app$ui, server=app$server),...)
   #app$is.running = FALSE  
 }

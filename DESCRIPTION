@@ -1,15 +1,20 @@
 Package: shinyEvents
 Type: Package
 Title: Shiny wrapper with event handlers instead of reactivity
-Version: 0.1
+Version: 0.1.1
 Date: 2014-11-12
 Author: Sebastian Kranz
 Maintainer: Sebastian Kranz <sebastian.kranz@uni-ulm.de>
 Description: Shiny is a great package. Yet, for more complex
-             projects, I find it hard to write clean code with
-             its reactivity paradigm. This package wraps shiny
-             into a more traditional ui programming approach:
-             - event handlers for input changes and button clicks
-             - explicit update functions to change outputs
+    projects, with much dynamic UI, I find it hard
+    to write clean code with its reactivity paradigm.
+    This package wraps shiny into a more traditional
+    programming approach:
+    - event handlers for input changes and button clicks
+    - explicit update functions to change outputs
+    - no explicit server function
 License: GPL >= 2.0
-Depends: shiny, restorepoint
+Depends:
+    shiny,
+    restorepoint
+RoxygenNote: 5.0.0
