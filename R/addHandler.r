@@ -142,7 +142,7 @@ changeHandler = function(id, fun,...,app=getApp(), on.create=FALSE, if.handler.e
         if (app$verbose)
           display(" run handler...")
         myfun = s_fun
-        do.call(myfun, c(list(id=s_id, value=input[[s_id]], session=session,app=app),s_args))
+        do.call(myfun, c(list(id=s_id, value=input[[s_id]], session=session,app=getApp()),s_args))
       }
     })
   )
