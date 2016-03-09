@@ -10,17 +10,25 @@
 
 .SHINY.EVENTS.ENV = new.env()
 
+getDefaultAppEvents = function() {
+  list(
+    buttonHandlerEvent=list(jscript=buttonHandlerJS())
+  )
+}
+
 #' Generate an empty shiny events app
-eventsApp = function(set.as.default=TRUE, verbose=TRUE, single.instance=FALSE) {
+eventsApp = function(set.as.default=TRUE, verbose=TRUE, single.instance=FALSE, add.events = getDefaultAppEvents()) {
   app = new.env()
-  app$glob = new.env(parent=globalenv())
+  glob = new.env(parent=globalenv())
+  
+  app$glob = glob
+
+  app$eventList = list()
   app$single.instance = single.instance
-  app$isSessionEventApp = FALSE
   app$is.running = FALSE
   app$handlers = list()
   app$values = list()
   app$aceHotKeyRandNum = list()
-  app$run.event.handlers=FALSE
   app$do.update = list()
   app$verbose=verbose
   app$output = list()
@@ -35,11 +43,18 @@ eventsApp = function(set.as.default=TRUE, verbose=TRUE, single.instance=FALSE) {
     cat(paste0("Started new session at ", Sys.time()))
     app = setAppSession(session,app)
     session = app$session
-    addEventHandlersToSession(app=app)
+    addEventsToSession(app=app)
+    addHandlersToSession(app=app)
     app$initHandler(session=session, input=input, output=output, app=app)
   }
   if (set.as.default)
     setApp(app)
+  
+  # register default events
+  for (eventId in names(add.events)) {
+    registerEvent(eventId=eventId,jscript=add.events[[eventId]]$jscript,app=app)
+  }
+  
   app
 }
 
@@ -111,6 +126,19 @@ viewApp = function(app=getApp(),ui=NULL,launch.browser=rstudio::viewer,...) {
   runEventsApp(app,ui, launch.browser=launch.browser,...)
 }
 
+appReadyToRun = function(app=getApp(), ui=app$ui) {
+  restore.point("appReadyToRun")
+  
+  script.tags = lapply(app$eventList, function(event) {
+    event$jscript
+  })
+  ui = tagList(
+    ui,
+    script.tags
+  )
+  app$ui = ui
+  app$is.running = TRUE
+}
 
 #' run shiny events app
 runEventsApp = function(app=getApp(),ui=NULL,...) {
@@ -118,10 +146,9 @@ runEventsApp = function(app=getApp(),ui=NULL,...) {
   if (!is.null(ui))
     setAppUI(ui=ui, app=app)
   setApp(app)
+  appReadyToRun(app)
   on.exit(app$is.running <- FALSE)
-  #app$is.running = TRUE
   runApp(list(ui=app$ui, server=app$server),...)
-  #app$is.running = FALSE  
 }
 
 display = function(...) {

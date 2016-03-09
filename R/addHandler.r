@@ -9,12 +9,9 @@
 #   3. Update input values when an input value or variable has changed without triggering further events
 
 
-resetEventHandlers = function(app = getApp()) {
-  app$values=list()  
-}
-
-addEventHandlersToSession = function(session.env=app$session.env, app=getApp()) {
-  restore.point("addEventHandlersToSession")
+# Adds classic shiny handlers to session
+addHandlersToSession = function(session.env=app$session.env, app=getApp()) {
+  restore.point("addHandlersToSession")
   for (i in seq_along(app$handlers)) {
     app$handlers[[i]]$call.env = initHandlerCallEnv(app$handlers[[i]]$call.env, session.env)      
     app$handlers[[i]]$observer = eval(app$handlers[[i]]$call,app$handlers[[i]]$call.env)    
@@ -35,22 +32,26 @@ destroyHandlerObserver = function(ind, app = getApp()) {
   if (app$is.running) {
     for (i in ind) {
       type = app$handlers[[i]]$type
-      if (type =="jsclick") {
-        onclick(handlers[[i]]$id, {}, add=FALSE)
-      } else if (type == "jsevent") {
-        onevent(handlers[[i]]$id, {}, add=FALSE)
-      } else {
-        if (is.function(app$handlers[[i]]$observer))
-          try(app$handlers[[i]]$observer$destroy())
-      }
+      if (is.function(app$handlers[[i]]$observer))
+        try(app$handlers[[i]]$observer$destroy())
     }
   }
-  
 }
 
-removeEventHandler = function(id, ind, app = getApp()) {
+removeEventHandler = function(id=NULL, ind=NULL, eventId=NULL, app = getApp()) {
+  restore.point("removeEventHandler")
+  
+  if (!is.null(eventId)) {
+    if (!is.null(id)) {
+      app$eventList[[eventId]]$handlers[[id]] = NULL
+    } else {
+      app$eventList[[eventId]]$glob.handler = NULL
+    }
+    return()
+  }
+
   #cat("\nremoveEventHandler")
-  if (!missing(id)) {
+  if (!is.null(id)) {
     ind = which(names(app$handlers) %in% id)
   }
   destroyHandlerObserver(ind, app=app)
@@ -93,32 +94,6 @@ addEventHandlerToApp = function(id, call, type="unknown", app = getApp(),session
     app$handlers[[id]]$timer = reactiveTimer(intervalMs = intervalMs, session)
   }
 }
-
-#' Add an handler for an click event based on shinyjs::onclick
-#' 
-#' @param id name of the input element
-#' @param fun function that will be called if the input value changes. The function will be called with the arguments: 'id', 'value' and 'session'. One can assign the same handler functions to several input elements.
-#' @param ... extra arguments that will be passed to fun when the event is triggered.
-jsclickHandler = function(id, fun,..., app = getApp(),if.handler.exists = c("replace","add","skip")[1], session=getAppSession(app)) {
-
-  if (isTRUE(app$verbose))
-    display("\nadd jsclickHandler for ",id)
-
-  args = list(...)
-
-  add = (if.handler.exists=="add")
-  
-  restore.point("jsclickHandler")
-  ca = substitute(env=list(s_id=id, s_fun=fun,add=add),
-    shinyjs::onclick(s_id,add=add,expr={
-      myfun = s_fun
-      do.call(myfun, c(list(id=s_id,app=getApp()),substitute(args)))
-    })
-  )
-  call.env = as.environment(list(args=args))
-  addEventHandlerToApp(id=id,call=ca,type="jsclick",app=app, if.handler.exists=if.handler.exists, call.env=call.env)
-}
-
 
 #' Add an handler to an input that is called when the input value changes
 #' 
@@ -175,36 +150,6 @@ timerHandler = function(id,intervalMs, fun,...,app=getApp(), on.create=FALSE, if
   )
   
   addEventHandlerToApp(id=id,call=ca,type="timer",app=app, if.handler.exists=if.handler.exists, intervalMs=intervalMs)
-}
-
-
-#' Add an handler to a button
-#' 
-#' @param id name of the button
-#' @param fun function that will be called if button is pressed. The function will be called with the arguments: 'id', 'value' and 'session'. One can assign the same handler functions to several buttons.
-#' @param ... extra arguments that will be passed to fun when the event is triggered.  
-buttonHandler = function(id, fun,..., app = getApp(),if.handler.exists = c("replace","add","skip")[1], session=getAppSession(app)) {
-  
-  if (app$verbose)
-    display("\nadd buttonHandler for ",id)
-
-  args = list(...)
-
-  #restore.point("buttonHandler")
-  
-  ca = substitute(env=list(s_id=id, s_fun=fun,s_args=args),
-    observe({
-      #browser()
-      if (hasButtonCounterIncreased(s_id, input[[s_id]])) {
-        if (app$verbose)
-          display(s_id, " has been clicked...")
-        myfun = s_fun
-        do.call(myfun, c(list(id=s_id, value=input[[s_id]],
-                              session=session,app=app),s_args))
-      }
-    })
-  )
-  addEventHandlerToApp(id=id,call=ca,type="button",app=app, if.handler.exists=if.handler.exists)
 }
 
 
@@ -274,22 +219,6 @@ hasWidgetValueChanged = function(id, new.value,on.create=FALSE, app = getApp()) 
   }
   return(changed)
 }
-
-#' Checks whether a button has been pressed again (internal function)
-hasButtonCounterIncreased = function(id, counter, app = getApp()) {
-  restore.point("hasButtonCounterIncreased")
-  if (isTRUE(counter == 0) | is.null(counter) | isTRUE(counter<=app$values[[id]])) {
-    app$values[[id]] = counter
-    if (app$verbose)
-      cat("\nno counter increase: ", id, " ",counter)
-    return(FALSE)
-  }
-  app$values[[id]] = counter
-  if (app$verbose)
-    cat("\ncounter has increased: ", id, " ",counter)
-  return(TRUE)  
-}
-
 
 #' Checks whether a button has been pressed again (internal function)
 wasAceHotkeyPressed = function(keyId, value, app = getApp()) {

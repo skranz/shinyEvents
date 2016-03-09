@@ -1,31 +1,3 @@
-jsclick.example = function() {
-  app = eventsApp()
-  library(shinyjs)
-  app$ui = fluidPage(
-    shinyjs::useShinyjs(),
-    inlineCSS(list(
-      .yellow = "background: #ffffaa",
-      .blue = "background: #aaaaff"
-    )),    
-    div(id="mydiv",
-      class="yellow",
-      p("Click on the text!")
-    )
-  )
-  y=list(k=12,env=as.environment(list(a=5)))
-  jsclickHandler("mydiv",x = 230, y= y,  function(app,id,x,y,...) {
-    restore.point("inclickhandler")
-    toggleClass(id, "blue")
-    cat("\nclick")
-    cat("x = ",x)
-    cat(y$env$a)
-  })
-  h = app$handlers[[1]]
-  h
-  as.list(h$call.env)
-  #eval(h$call, h$call.env)
-  viewApp()
-}
 
 gotcha.example = function() {
   library(shiny)
@@ -173,7 +145,7 @@ nested.ui.example = function() {
     cat("before setText")
     setText(paste0("Text",level),txt)
     cat("after setText")
-    removeEventHandler("Btn1")
+    removeEventHandler(id="Btn1",eventId="buttonHandlerEvent")
     cat("\n finished press....")
   }
 
@@ -181,7 +153,7 @@ nested.ui.example = function() {
   buttonHandler("Btn1", press, level=1)
   buttonHandler("Btn2", press, level=2)
 
-  runEventsApp(app,ui=main.ui)
+  viewApp(app,ui=main.ui)
 }
 
 

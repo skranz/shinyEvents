@@ -1,7 +1,12 @@
-
-# shinyEvents: build shiny apps with event handlers
+# shinyEvents: Alternative way to build shiny apps based on event handlers
 
 Sebastian Kranz, Ulm University
+
+### NEW Version that is not fully compatible with old apps
+
+Starting from version 2.0 shiny events is considerably rewritten. Instead of just building event handling on top of shiny's reactive framework, it now directly uses javascript events, circumventing many steps of shiny's reactivity. This has performance benefits. There may be some incompatibilities with the old version, however. 
+
+### Key idea
 
 RStudio's shiny is a great framework to generate web applications with R. In a classical shiny app, interactivity is not generated via event handlers but by `reactive programming`. For details, see the shiny documentation and tutorials under [http://shiny.rstudio.com/](http://shiny.rstudio.com/).
 
