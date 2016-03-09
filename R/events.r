@@ -47,7 +47,7 @@ js.event.triggered = function(eventId,value,..., app=getApp()) {
   restore.point("js.event.triggered")
   event = app$eventList[[eventId]]
   id = value$id
-  cat("\njs event triggered eventId = ",eventId," target id = ",id)
+  #cat("\njs event triggered eventId = ",eventId," target id = ",id)
   h = event$handlers[[id]]
   if (is.null(h)) {
     h = event$glob.handler
@@ -81,6 +81,10 @@ registerEvent = function(eventId, jscript=NULL, app=getApp()) {
     js.event.triggered(eventId=eventId,value)
   })
   )
+  
+  if (is.character(jscript)) {
+    jscript = tags$script(HTML(jscript))
+  }
   event = list(
     eventId = eventId,
     jscript = jscript,
@@ -97,11 +101,54 @@ getAppEvent = function(eventId,app=getApp()) {
   app$eventList[[eventId]]  
 }
 
+idEventHandler = function(id, event="change", css.locator="", inner.js.code=NULL, shiny.value.code=NULL, eventId=paste0(id,"_id_",event,"_event"),...) {
+  restore.point("classEventHandler")
+  if (nchar(css.locator)>0) {
+    css.locator=paste0(css.locator," #",id)
+  } else {
+    css.locator=paste0("#",id)
+  }
+  customEventHandler(eventId=eventId, css.locator=css.locator, event=event, inner.js.code=inner.js.code, shiny.value.code=shiny.value.code, id=NULL,...)
+}
+
+classEventHandler = function(class, event="change", css.locator="", inner.js.code=NULL, shiny.value.code=NULL, eventId=paste0(class,"_class_",event,"_event"), class.prefix=".",...) {
+  restore.point("classEventHandler")
+  if (nchar(css.locator)>0) {
+    css.locator=paste0(css.locator," ",class.prefix,class)
+  } else {
+    css.locator=paste0(class.prefix,class)
+  }
+  customEventHandler(eventId=eventId, css.locator=css.locator, event=event, inner.js.code=inner.js.code, shiny.value.code=shiny.value.code, id=NULL,...)
+}
+
+customEventHandler = function(eventId, css.locator, event="change", inner.js.code=NULL, shiny.value.code=NULL, id=NULL,...) {
+  restore.point("customEventHandler")
+
+  if (is.null(inner.js.code)) {
+    inner.js.code = 'var value = $(this).val();'
+  }
+  if (is.null(shiny.value.code)) {
+    shiny.value.code = paste0('{eventId:"',eventId,'",id: this.id, value: $(this).val()})');
+  }
+
+  jscript = paste0('
+$("',css.locator,'").', event,'(function() {
+  ',inner.js.code,'
+  Shiny.onInputChange("',eventId,'", ', shiny.value.code,');
+  }
+});
+')
+  eventHandler(eventId=eventId,id=id,...,jscript=jscript)
+}
+
+
 # more efficient version of button handler via global eventId handler
 buttonHandler = function(id, fun, ..., eventId="buttonHandlerEvent",jscript=buttonHandlerJS(eventId), app=getApp()) {
   restore.point("buttonHandler")
   eventHandler(eventId=eventId,id=id,fun=fun,...,jscript=jscript, app=app)
 }
+
+
 
 buttonHandlerJS = function(eventId="buttonHandlerEvent") {
   restore.point("buttonHandlerJS")
