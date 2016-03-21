@@ -8,6 +8,9 @@ examples.click = function() {
     )
   )
   buttonHandler("btn1",var=45,function(id, var,...) {
+    args = list(...)
+    restore.point("btn.handler")
+    
     print(var)
   })
   
@@ -56,14 +59,14 @@ js.event.triggered = function(eventId,value,..., app=getApp()) {
     cat("\nNo event handler for eventId =",eventId," target id = ", id," registered.")
     return()
   }
-  do.call(h$fun,c(value,h$args))
+  do.call(h$fun,c(value,h$args,list(app=app, session=app$session)))
 }
 
 # register a java script eventId and create handler list
-registerEvent = function(eventId, jscript=NULL, app=getApp()) {
+registerEvent = function(eventId, jscript=NULL, app=getApp(), overwrite=FALSE) {
   # eventId already exists
   event = app$eventList[[eventId]]
-  if (!is.null(event))
+  if (!is.null(event) & !overwrite)
     return(event)
 
   restore.point("registerEvent")

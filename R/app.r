@@ -16,13 +16,48 @@ getDefaultAppEvents = function() {
   )
 }
 
+setAppHasBottomScript = function(has.bottom.script=FALSE, app=getApp()) {
+  app$glob$..HAS.BOTTOM.SCRIPT = has.bottom.script 
+}
+
+#' If app is not running, mark script to be added at the bottom and return NULL
+#' If app is already running return script directly
+bottomScript = function(..., app=getApp()) {
+  tag = tags$script(...)
+  attr(tag,"isBottomScript") <- TRUE
+  if (!isTRUE(app$is.running)) app$glob$..HAS.BOTTOM.SCRIPT = TRUE
+  tag
+}
+
+#' Given a tag object, extract out any children of tags$head
+#' and return them separate from the body.
+moveBottomScripts <- function(ui, reset.app=FALSE) {
+  restore.point("moveBottomScripts")
+  
+  bottomItems <- list()
+  result <- htmltools:::rewriteTags(ui, function(uiObj) {
+    if (htmltools:::isTag(uiObj) && isTRUE(attr(uiObj,"isBottomScript"))) {
+      bottomItems <<- append(bottomItems, list(uiObj))
+      return(NULL)
+    }
+    return(uiObj)
+  }, FALSE)
+
+  if (reset.app) {
+    app=getApp()
+    app$glob$..HAS.BOTTOM.SCRIPT = FALSE
+  }
+  return(tagList(result, bottomItems))
+}
+
 #' Generate an empty shiny events app
-eventsApp = function(set.as.default=TRUE, verbose=TRUE, single.instance=FALSE, add.events = getDefaultAppEvents()) {
+eventsApp = function(set.as.default=TRUE, verbose=TRUE, single.instance=FALSE, add.events = getDefaultAppEvents(), no.events=FALSE) {
   app = new.env()
   glob = new.env(parent=globalenv())
   
   app$glob = glob
 
+  app$no.events = no.events
   app$eventList = list()
   app$single.instance = single.instance
   app$is.running = FALSE
@@ -129,13 +164,25 @@ viewApp = function(app=getApp(),ui=NULL,launch.browser=rstudio::viewer,...) {
 appReadyToRun = function(app=getApp(), ui=app$ui) {
   restore.point("appReadyToRun")
   
-  script.tags = lapply(app$eventList, function(event) {
-    event$jscript
-  })
-  ui = tagList(
-    ui,
-    script.tags
-  )
+  # js code for dsetUI
+  js = '
+Shiny.addCustomMessageHandler("shinyEventsSetInnerHTML", function(message) {
+  $("#"+message.id).html(message.html);
+});'
+
+  
+  if (!app$no.events) {
+    script.tags = lapply(app$eventList, function(event) {
+      event$jscript
+    })
+    ui = tagList(
+      ui,
+      script.tags,
+      tags$script(HTML(js))
+    )
+  }
+  if (isTRUE(app$glob$..HAS.BOTTOM.SCRIPT))
+    ui = moveBottomScripts(ui)
   app$ui = ui
   app$is.running = TRUE
 }

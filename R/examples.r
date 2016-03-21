@@ -1,4 +1,52 @@
 
+
+setui.example = function() {
+
+  library(shinyEventsUI)
+  app = eventsApp()
+  
+  app$ui = fluidPage(
+    nestedSelector(id = "rbg",
+      selectors=list(
+        section = list(
+          choices=list("A"="A","B"="B"),
+          contents=list("div1","div2")
+        )
+      )
+    )$ui,
+    hidden_div(id="div1",uiOutput("out"),uiOutput("out1"),"div1",actionButton("btn1",label="Click")),
+    hidden_div(id="div2","div2",actionButton("btn",label="Click")),
+    div(id="div3","div3",uiOutput("out3"))
+    
+  )
+  buttonHandler("btn", function(...) {
+    txt = as.character(runif(1))
+    setUI("out3",txt)
+    setUI("out1",txt) # does not work correctly, since out1 is inside a hidden div
+    dsetUI("out",txt) # need dsetUI since out is inside a hidden div
+    cat("\n setUI to ",txt)
+  })
+  buttonHandler("btn1", function(...) {
+    cat("\n whatever... ")
+  })
+
+  viewApp(app)
+}
+
+
+
+bottom.script.example = function() {
+  app = eventsApp()
+  app$ui = fluidPage(
+    bottomScript(HTML("alert('Hello World');")),
+    p("I am a paragraph.")
+  )
+  moveBottomScripts(app$ui)
+  viewApp(app)
+
+}
+
+
 gotcha.example = function() {
   library(shiny)
   # Create one button per person
@@ -57,7 +105,7 @@ plot.example = function() {
   )
   setUI("myui", plotOutput("myplot"))
   setPlot("myplot",plot(runif(100),runif(100)))
-  runEventsApp(app,launch.browser=rstudio::viewer)
+  viewApp(app)
 
 }
 
