@@ -80,8 +80,8 @@ addEventHandlerToApp = function(id, call, type="unknown", app = getApp(),session
       destroyHandlerObserver(id,app=app)
     app$handlers[[id]] = list(id=id, call=call, type=type, observer=NULL, call.env=call.env)
     if (app$is.running) {
-      app$handlers[[n]]$call.env = initHandlerCallEnv(call.env,session.env)      
-      app$handlers[[n]]$observer = eval(call,app$handlers[[n]]$call.env)
+      app$handlers[[id]]$call.env = initHandlerCallEnv(call.env,session.env)      
+      app$handlers[[id]]$observer = eval(call,app$handlers[[id]]$call.env)
       #app$handlers[[n]]$observer = eval(call,session.env)
     }
 
