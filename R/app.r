@@ -12,7 +12,8 @@
 
 getDefaultAppEvents = function() {
   list(
-    buttonHandlerEvent=list(jscript=buttonHandlerJS())
+    buttonHandlerEvent=list(jscript=buttonHandlerJS()),
+    selectChangeHandlerEvent=list(jscript=selectChangeHandlerJS())
   )
 }
 
@@ -51,12 +52,14 @@ moveBottomScripts <- function(ui, reset.app=FALSE) {
 }
 
 #' Generate an empty shiny events app
-eventsApp = function(set.as.default=TRUE, verbose=TRUE, single.instance=FALSE, add.events = getDefaultAppEvents(), no.events=FALSE) {
+eventsApp = function(set.as.default=TRUE, verbose=TRUE, single.instance=FALSE, add.events = getDefaultAppEvents(), no.events=FALSE, need.authentication=FALSE) {
   app = new.env()
   glob = new.env(parent=globalenv())
   
   app$glob = glob
 
+  app$need.authentication = need.authentication
+  app$is.authenticated = FALSE
   app$no.events = no.events
   app$eventList = list()
   app$single.instance = single.instance

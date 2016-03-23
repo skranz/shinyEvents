@@ -2,7 +2,7 @@
 % Please edit documentation in R/addHandler.r
 \name{appInitHandler}
 \alias{appInitHandler}
-\title{Set a function that will be called when a new session of 
+\title{Set a function that will be called when a new session of
 an app is initialized.}
 \usage{
 appInitHandler(initHandler, app = getApp())

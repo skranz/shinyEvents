@@ -13,8 +13,8 @@
 addHandlersToSession = function(session.env=app$session.env, app=getApp()) {
   restore.point("addHandlersToSession")
   for (i in seq_along(app$handlers)) {
-    app$handlers[[i]]$call.env = initHandlerCallEnv(app$handlers[[i]]$call.env, session.env)      
-    app$handlers[[i]]$observer = eval(app$handlers[[i]]$call,app$handlers[[i]]$call.env)    
+    app$handlers[[i]]$call.env = initHandlerCallEnv(app$handlers[[i]]$call.env, session.env)
+    app$handlers[[i]]$observer = eval(app$handlers[[i]]$call,app$handlers[[i]]$call.env)
     #app$handlers[[i]]$observer = eval(app$handlers[[i]]$call, session.env)
   }
 }
@@ -40,7 +40,7 @@ destroyHandlerObserver = function(ind, app = getApp()) {
 
 removeEventHandler = function(id=NULL, ind=NULL, eventId=NULL, app = getApp()) {
   restore.point("removeEventHandler")
-  
+
   if (!is.null(eventId)) {
     if (!is.null(id)) {
       app$eventList[[eventId]]$handlers[[id]] = NULL
@@ -64,15 +64,15 @@ removeEventHandler = function(id=NULL, ind=NULL, eventId=NULL, app = getApp()) {
 
 
 addEventHandlerToApp = function(id, call, type="unknown", app = getApp(),session.env=app$session.env, if.handler.exists = c("replace","add","skip")[1], intervalMs=NULL, session=getAppSession(app), call.env=NULL) {
-  #restore.point("addEventHandlerToApp")
-  has.handler = id %in% names(app$handlers) 
-  
+  restore.point("addEventHandlerToApp")
+  has.handler = id %in% names(app$handlers)
+
   if ( (!has.handler) | if.handler.exists == "add") {
     n = length(app$handlers)+1
     app$handlers[[n]] = list(id=id, call=call, type=type, observer=NULL, call.env=call.env)
     names(app$handlers)[n] <- id
     if (app$is.running) {
-      app$handlers[[n]]$call.env = initHandlerCallEnv(call.env,session.env)      
+      app$handlers[[n]]$call.env = initHandlerCallEnv(call.env,session.env)
       app$handlers[[n]]$observer = eval(call,app$handlers[[n]]$call.env)
       #app$handlers[[n]]$observer = eval(call,session.env)
     }
@@ -81,9 +81,9 @@ addEventHandlerToApp = function(id, call, type="unknown", app = getApp(),session
       destroyHandlerObserver(id,app=app)
     app$handlers[[id]] = list(id=id, call=call, type=type, observer=NULL, call.env=call.env)
     if (app$is.running) {
-      app$handlers[[n]]$call.env = initHandlerCallEnv(call.env,session.env)      
-      app$handlers[[n]]$observer = eval(call,app$handlers[[n]]$call.env)
-      #app$handlers[[n]]$observer = eval(call,session.env)
+      app$handlers[[id]]$call.env = initHandlerCallEnv(call.env,session.env)
+      app$handlers[[id]]$observer = eval(call,app$handlers[[id]]$call.env)
+      #app$handlers[[id]]$observer = eval(call,session.env)
     }
 
   } else {
@@ -95,11 +95,14 @@ addEventHandlerToApp = function(id, call, type="unknown", app = getApp(),session
   }
 }
 
+
+
 #' Add an handler to an input that is called when the input value changes
-#' 
+#'
 #' @param id name of the input element
 #' @param fun function that will be called if the input value changes. The function will be called with the arguments: 'id', 'value' and 'session'. One can assign the same handler functions to several input elements.
 #' @param ... extra arguments that will be passed to fun when the event is triggered.
+#' @export
 changeHandler = function(id, fun,...,app=getApp(), on.create=FALSE, if.handler.exists = c("replace","add","skip")[1], session=getAppSession(app)) {
   #browser()
   if (app$verbose)
@@ -107,7 +110,7 @@ changeHandler = function(id, fun,...,app=getApp(), on.create=FALSE, if.handler.e
 
   # Create dynamic observer
   args = list(...)
-  
+
    ca = substitute(env=list(s_id=id, s_fun=fun,s_args=args, s_on.create=on.create),
     observe({
       if (app$verbose)
@@ -121,16 +124,16 @@ changeHandler = function(id, fun,...,app=getApp(), on.create=FALSE, if.handler.e
       }
     })
   )
-  
+
   addEventHandlerToApp(id=id,call=ca,type="change",app=app, if.handler.exists=if.handler.exists)
 }
 
 
 #' Add an handler that triggers every intervalMs milliseconds
-#' 
+#'
 #' @param id name of the input element
 #' @param fun function that will be called if the input value changes. The function will be called with the arguments: 'id', 'value' and 'session'. One can assign the same handler functions to several input elements.
-#' @param ... extra arguments that will be passed to fun when the event is triggered.  
+#' @param ... extra arguments that will be passed to fun when the event is triggered.
 timerHandler = function(id,intervalMs, fun,...,app=getApp(), on.create=FALSE, if.handler.exists = c("replace","add","skip")[1], verbose=FALSE, session=getAppSession(app)) {
   #browser()
   if (verbose)
@@ -138,7 +141,7 @@ timerHandler = function(id,intervalMs, fun,...,app=getApp(), on.create=FALSE, if
 
   # Create dynamic observer
   args = list(...)
-  
+
   ca = substitute(env=list(s_id=id, s_fun=fun,s_args=args, s_on.create=on.create,s_verbose=verbose),
     observe({
       if (s_verbose)
@@ -148,16 +151,16 @@ timerHandler = function(id,intervalMs, fun,...,app=getApp(), on.create=FALSE, if
       do.call(myfun, c(list(id=s_id, value=cURReNTTime, session=session,app=app),s_args))
     })
   )
-  
+
   addEventHandlerToApp(id=id,call=ca,type="timer",app=app, if.handler.exists=if.handler.exists, intervalMs=intervalMs)
 }
 
 
 #' Add an handler to a hotkey in an aceEditor component
-#' 
+#'
 #' @param id name of the button
 #' @param fun function that will be called if button is pressed. The function will be called with the following arguments:
-#' 
+#'
 #'  keyId: the id assigned to the hotkey
 #'  editorId: the id of the aceEditor widget
 #'  selection: if a text is selected, this selection
@@ -165,9 +168,9 @@ timerHandler = function(id,intervalMs, fun,...,app=getApp(), on.create=FALSE, if
 #'  cursor: a list with the current cursor position:
 #'          row and column with index starting with 0
 #'  session: the current session object
-#' @param ... extra arguments that will be passed to fun when the event is triggered.  
+#' @param ... extra arguments that will be passed to fun when the event is triggered.
 aceHotkeyHandler = function(id, fun,..., app = getApp(),if.handler.exists = c("replace","add","skip")[1], session=getAppSession(app)) {
-  
+
   if (app$verbose)
     display("\nadd aceHotkeyHandler for ",id)
 
@@ -199,7 +202,7 @@ hasWidgetValueChanged = function(id, new.value,on.create=FALSE, app = getApp()) 
   #cat("\nid=",id)
   #cat("\napp$values[[id]]=",app$values[[id]])
   #cat("\nnew.value=",new.value)
-  
+
   if (!id %in% names(app$values)) {
     if (is.null(new.value)) {
       app$values[id] = list(NULL)
@@ -228,20 +231,20 @@ wasAceHotkeyPressed = function(keyId, value, app = getApp()) {
     return(FALSE)
   old.rand = app$aceHotKeyRandNum[[keyId]]
   app$aceHotKeyRand[[keyId]] = value$randNum
-  
+
   was.pressed = !identical(value$randNum, old.rand)
   was.pressed
 }
 
-#' Set a function that will be called when a new session of 
+#' Set a function that will be called when a new session of
 #' an app is initialized.
-#' 
+#'
 #'  @param initHandler a function that takes parameters
 #'    session, input, output and app. It will be called from
 #'    the app$server function whenever a new session is created.
 #'    It allows to initialize session specific variables and e.g.
 #'    store them within the app object. The passed app object is already
-#'    the local copy created for the new session.    
+#'    the local copy created for the new session.
 appInitHandler = function(initHandler,app=getApp()) {
   app$initHandler = initHandler
 }

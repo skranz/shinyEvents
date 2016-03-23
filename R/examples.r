@@ -241,6 +241,36 @@ hotkey.shiny.events.example = function() {
 }
 
 
+change.handler.example = function() {
+  library(shinyEvents)
+
+  app = eventsApp(verbose=FALSE)
+
+  # Main page
+  app$ui = fluidPage(
+    selectizeInput("varInput", "Variable:",
+        c("Cylinders" = "cyl",
+          "Transmission" = "am",
+          "Gears" = "gear")
+    ),
+    radioButtons("rad",label="radio", choices=c("A","B","C")),
+    textOutput("myText")
+  )
+  # handler for change of an input value
+  selectChangeHandler("varInput",function(id, value,...) {
+    cat("change handler called...")
+    args = list(...)
+    restore.point("changeHandler.inner")
+    setText("myText",paste0("You chose the list item ", value,". ", 
+                            "A random number: ", sample(1:1000,1)))
+  })
+
+  viewApp(app)
+}
+
+
+
+
 basic.shinyEvents.example = function() {
   library(shinyEvents)
 
@@ -275,6 +305,7 @@ basic.shinyEvents.example = function() {
 
   # handler for change of an input value
   changeHandler("varInput",on.create=TRUE, function(id, value,...) {
+    
     setText("myText",paste0("You chose the list item ", value,". ", 
                             "A random number: ", sample(1:1000,1)))
   })

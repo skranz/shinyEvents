@@ -104,44 +104,55 @@ getAppEvent = function(eventId,app=getApp()) {
   app$eventList[[eventId]]  
 }
 
-idEventHandler = function(id, event="change", css.locator="", inner.js.code=NULL, shiny.value.code=NULL, eventId=paste0(id,"_id_",event,"_event"),...) {
-  restore.point("classEventHandler")
+#' An event handler for an object with given id
+#' @export
+idEventHandler = function(id, fun, event="change", css.locator="", inner.js.code=NULL, shiny.value.code=NULL, eventId=paste0(id,"_id_",event,"_event"),...) {
+  restore.point("idEventHandler")
   if (nchar(css.locator)>0) {
     css.locator=paste0(css.locator," #",id)
   } else {
     css.locator=paste0("#",id)
   }
-  customEventHandler(eventId=eventId, css.locator=css.locator, event=event, inner.js.code=inner.js.code, shiny.value.code=shiny.value.code, id=NULL,...)
+  customEventHandler(eventId=eventId,fun=fun, css.locator=css.locator, event=event, inner.js.code=inner.js.code, shiny.value.code=shiny.value.code, id=NULL,...)
 }
 
-classEventHandler = function(class, event="change", css.locator="", inner.js.code=NULL, shiny.value.code=NULL, eventId=paste0(class,"_class_",event,"_event"), class.prefix=".",...) {
+#' An event handler for objects with given class
+#' @export
+classEventHandler = function(class, fun, event="change", css.locator="", inner.js.code=NULL, shiny.value.code=NULL, eventId=paste0(class,"_class_",event,"_event"), class.prefix=".",...) {
   restore.point("classEventHandler")
   if (nchar(css.locator)>0) {
     css.locator=paste0(css.locator," ",class.prefix,class)
   } else {
     css.locator=paste0(class.prefix,class)
   }
-  customEventHandler(eventId=eventId, css.locator=css.locator, event=event, inner.js.code=inner.js.code, shiny.value.code=shiny.value.code, id=NULL,...)
+  customEventHandler(eventId=eventId, fun=fun,css.locator=css.locator, event=event, inner.js.code=inner.js.code, shiny.value.code=shiny.value.code, id=NULL,...)
 }
 
-customEventHandler = function(eventId, css.locator, event="change", inner.js.code=NULL, shiny.value.code=NULL, id=NULL,...) {
+#' A custom event handler. Need to write correct css.locator
+#' @export
+customEventHandler = function(eventId, fun, css.locator, event="change", inner.js.code=NULL, shiny.value.code=NULL, id=NULL,...) {
   restore.point("customEventHandler")
 
   if (is.null(inner.js.code)) {
     inner.js.code = 'var value = $(this).val();'
   }
   if (is.null(shiny.value.code)) {
-    shiny.value.code = paste0('{eventId:"',eventId,'",id: this.id, value: $(this).val()})');
+    shiny.value.code = paste0('{eventId:"',eventId,'",id: this.id, value: $(this).val()}')
   }
 
   jscript = paste0('
 $("',css.locator,'").', event,'(function() {
   ',inner.js.code,'
   Shiny.onInputChange("',eventId,'", ', shiny.value.code,');
-  }
 });
 ')
-  eventHandler(eventId=eventId,id=id,...,jscript=jscript)
+  jscript = paste0('
+$("body").on("',event,'", "',css.locator,'"),function() {
+  ',inner.js.code,'
+  Shiny.onInputChange("',eventId,'", ', shiny.value.code,');
+});
+')
+  eventHandler(eventId=eventId,id=id,fun=fun,...,jscript=jscript)
 }
 
 
@@ -150,7 +161,6 @@ buttonHandler = function(id, fun, ..., eventId="buttonHandlerEvent",jscript=butt
   restore.point("buttonHandler")
   eventHandler(eventId=eventId,id=id,fun=fun,...,jscript=jscript, app=app)
 }
-
 
 
 buttonHandlerJS = function(eventId="buttonHandlerEvent") {
@@ -163,6 +173,30 @@ buttonHandlerJS = function(eventId="buttonHandlerEvent") {
     }
   });'))
   return(res)
+}
+
+
+#' Add an handler to an input or select that is called when the input value changes
+#'
+#' @param id name of the input element
+#' @param fun function that will be called if the input value changes. The function will be called with the arguments: 'id', 'value' and 'session'. One can assign the same handler functions to several input elements.
+#' @param ... extra arguments that will be passed to fun when the event is triggered.
+#' @export
+selectChangeHandler = function(id, fun, ..., eventId="selectChangeHandlerEvent",jscript=selectChangeHandlerJS(eventId), app=getApp()) {
+  restore.point("selectChangeHandlerJS")
+  eventHandler(eventId=eventId,id=id,fun=fun,...,jscript=jscript, app=app)
+}
+
+selectChangeHandlerJS = function(eventId="selectChangeHandlerEvent") {
+  restore.point("selectChangeHandlerJS")
+  res = tags$script(paste0('
+  $("body").on("change","select", function (e) {
+    var value = $(this).val();
+    Shiny.onInputChange("',eventId,'", {eventId: "',eventId,'", id: e.target.id, value: value, tag: e.target.nodeName, nonce: Math.random()});
+  });
+  '))
+  return(res)
+  
 }
 
 documentClickHandler = function(fun,...,eventId="documentClickHandlerEvent", jscript=documentClickHandlerJS(eventId), id=NULL) {
