@@ -170,6 +170,12 @@ buttonHandlerJS = function(eventId="buttonHandlerEvent") {
     var tag = e.target.nodeName;
     if (tag === "BUTTON") {
       Shiny.onInputChange("',eventId,'", {eventId: "',eventId,'", id: e.target.id, tag: tag, nonce: Math.random(), pageX: e.pageX, pageY: e.pageY});
+      return;
+    } else {
+      var ptag = e.target.parentNode.nodeName;
+      if (ptag === "BUTTON" || ptag ==="BUTTON") {
+        Shiny.onInputChange("',eventId,'", {eventId: "',eventId,'", id: e.target.parentNode.id, tag: ptag, nonce: Math.random(), pageX: e.pageX, pageY: e.pageY});
+      }
     }
   });'))
   return(res)

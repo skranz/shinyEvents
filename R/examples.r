@@ -1,3 +1,11 @@
+button.image.click = function() {
+  library(SeminarMatching)
+  setwd("D:/libraries/SeminarMatching/semapps/shared")
+  restore.point.options(display.restore.point = FALSE)
+  app = StudSeminarsApp(init.userid = "test", init.password="test", lang="de")
+  viewApp(app)
+}
+
 
 
 setui.example = function() {
