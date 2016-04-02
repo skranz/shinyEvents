@@ -1,3 +1,26 @@
+image.click.example = function() {
+  library(EconCurves)
+  setwd("D:/libraries/EconCurves/")
+  filename="test.png"
+  res = plot.png.with.coordmap(plot(1:10), width.px = 400, height.px=300, dir=getwd(), filename=filename)
+  library(shinyEvents)
+  app = eventsApp()
+  addResourcePath("fig", getwd())
+  app$ui = fluidPage(
+    p("Image"),
+    tags$img(src = paste0("fig/",filename),id="myimg")
+  )
+  imageClickHandler(id="myimg", function(...) {
+    args = list(...)
+    x = args$x
+    y = args$y
+    restore.point("my.image.handler")
+    cat("\nclicked on image")
+  })
+  viewApp()
+
+}
+
 button.image.click = function() {
   library(SeminarMatching)
   setwd("D:/libraries/SeminarMatching/semapps/shared")

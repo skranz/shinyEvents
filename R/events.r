@@ -86,7 +86,7 @@ registerEvent = function(eventId, jscript=NULL, app=getApp(), overwrite=FALSE) {
   )
   
   if (is.character(jscript)) {
-    jscript = tags$script(HTML(jscript))
+    jscript = singleton(tags$script(HTML(jscript)))
   }
   event = list(
     eventId = eventId,
@@ -162,9 +162,27 @@ buttonHandler = function(id, fun, ..., eventId="buttonHandlerEvent",jscript=butt
   eventHandler(eventId=eventId,id=id,fun=fun,...,jscript=jscript, app=app)
 }
 
+imageClickHandler = function(id, fun, ..., eventId="imageClickEvent", app=getApp()) {
+  restore.point("imageClickHandler")
+  eventHandler(eventId=eventId,id=id,fun=fun,...,jscript=NULL, app=app)
+}
 
-buttonHandlerJS = function(eventId="buttonHandlerEvent") {
+buttonHandlerJS = function(eventId="buttonHandlerEvent", imageEventId="imageClickEvent", add.image.handler=TRUE) {
   restore.point("buttonHandlerJS")
+  img.code = ""
+  if (add.image.handler) {
+    img.code = paste0('
+    if (tag === "IMG") {
+      var offset = $(e.target).offset();
+      //alert("Image click: offset= "+JSON.stringify(offset));
+      var x = (e.pageX - offset.left);
+      var y = (e.pageY - offset.top);
+      Shiny.onInputChange("',imageEventId,'", {eventId: "',imageEventId,'", id: e.target.id, x: x, y: y, tag: tag, nonce: Math.random(), pageX: e.pageX, pageY: e.pageY});
+      return;
+    }
+    ')
+  }
+  
   res = tags$script(paste0('
   $(document).on("click", function (e) {
     var tag = e.target.nodeName;
@@ -175,8 +193,10 @@ buttonHandlerJS = function(eventId="buttonHandlerEvent") {
       var ptag = e.target.parentNode.nodeName;
       if (ptag === "BUTTON" || ptag ==="BUTTON") {
         Shiny.onInputChange("',eventId,'", {eventId: "',eventId,'", id: e.target.parentNode.id, tag: ptag, nonce: Math.random(), pageX: e.pageX, pageY: e.pageY});
+      return;
       }
     }
+',img.code,'
   });'))
   return(res)
 }
