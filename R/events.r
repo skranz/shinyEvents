@@ -34,15 +34,31 @@ addEventsToSession = function(session.env=app$session.env, app=getApp()) {
 # A general event handler for all sorts of java script events
 # that are bound to a reactive shiny variable via
 # Shiny.onInputChange("{{eventId}}", {id: e.target.id, tag: e.target.nodeName, nonce: Math.random()});
-eventHandler = function(eventId,id=eventId, fun, ...,jscript=NULL, app=getApp()) {
+eventHandler = function(eventId,id=eventId, fun, ...,jscript=NULL, app=getApp(), no.authentication.required=FALSE) {
   args = list(...)
   restore.point("eventHandler")
   registerEvent(eventId,jscript=jscript,app=app)
   value=list(fun=fun,args=args)
+  if (no.authentication.required) {
+    app$events.without.authentication = unique(c(id, app$events.without.authentication))
+  }
   if (!is.null(id)) {
     app$eventList[[eventId]]$handlers[[id]] = value
   } else {
     app$eventList[[eventId]]$glob.handler = value
+  }
+  
+}
+
+
+
+test.event.authentication = function(id, eventId=NULL, app=getApp()) {
+  if (isTRUE(app$need.authentication)) {
+    if (!isTRUE(app$is.authenticated)) {
+      if (! id %in% app$events.without.authentication) {
+        stop("An event has been stopped due to lack of authentication. If you did not try to circumvent authentification, but still see this message, there is probably a bug in the software.")
+      }  
+    }
   }
 }
 
@@ -50,6 +66,7 @@ js.event.triggered = function(eventId,value,..., app=getApp()) {
   restore.point("js.event.triggered")
   event = app$eventList[[eventId]]
   id = value$id
+  test.event.authentication(id=id, eventId=eventId, app=app)
   #cat("\njs event triggered eventId = ",eventId," target id = ",id)
   h = event$handlers[[id]]
   if (is.null(h)) {
@@ -156,15 +173,22 @@ $("body").on("',event,'", "',css.locator,'"),function() {
 }
 
 
-# more efficient version of button handler via global eventId handler
-buttonHandler = function(id, fun, ..., eventId="buttonHandlerEvent",jscript=buttonHandlerJS(eventId), app=getApp()) {
+#' A more efficient version of button handler via global eventId handler
+#' @param id buttonId
+#' @param fun the handler fun that will be called when the button is clicked
+#' @param ... additional arguments passed to the handler fun
+buttonHandler = function(id, fun, ..., eventId="buttonHandlerEvent",jscript=buttonHandlerJS(eventId), app=getApp(),no.authentication.required=FALSE) {
   restore.point("buttonHandler")
-  eventHandler(eventId=eventId,id=id,fun=fun,...,jscript=jscript, app=app)
+  eventHandler(eventId=eventId,id=id,fun=fun,...,jscript=jscript, app=app,no.authentication.required=no.authentication.required)
 }
 
-imageClickHandler = function(id, fun, ..., eventId="imageClickEvent", app=getApp()) {
+#' Handler for an image click
+#' @param id id of the HTML img object
+#' @param fun the handler fun that will be called when the image is clicked
+#' @param ... additional arguments passed to the handler fun
+imageClickHandler = function(id, fun, ..., eventId="imageClickEvent", app=getApp(),no.authentication.required=FALSE) {
   restore.point("imageClickHandler")
-  eventHandler(eventId=eventId,id=id,fun=fun,...,jscript=NULL, app=app)
+  eventHandler(eventId=eventId,id=id,fun=fun,...,jscript=NULL, app=app,no.authentication.required=no.authentication.required)
 }
 
 buttonHandlerJS = function(eventId="buttonHandlerEvent", imageEventId="imageClickEvent", add.image.handler=TRUE) {

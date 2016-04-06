@@ -63,10 +63,12 @@ removeEventHandler = function(id=NULL, ind=NULL, eventId=NULL, app = getApp()) {
 
 
 
-addEventHandlerToApp = function(id, call, type="unknown", app = getApp(),session.env=app$session.env, if.handler.exists = c("replace","add","skip")[1], intervalMs=NULL, session=getAppSession(app), call.env=NULL) {
+addEventHandlerToApp = function(id, call, type="unknown", app = getApp(),session.env=app$session.env, if.handler.exists = c("replace","add","skip")[1], intervalMs=NULL, session=getAppSession(app), call.env=NULL, no.authentication.required=FALSE) {
   restore.point("addEventHandlerToApp")
   has.handler = id %in% names(app$handlers)
-
+  if (no.authentication.required) {
+    app$events.without.authentication = unique(c(id, app$events.without.authentication))
+  }
   if ( (!has.handler) | if.handler.exists == "add") {
     n = length(app$handlers)+1
     app$handlers[[n]] = list(id=id, call=call, type=type, observer=NULL, call.env=call.env)
@@ -103,7 +105,7 @@ addEventHandlerToApp = function(id, call, type="unknown", app = getApp(),session
 #' @param fun function that will be called if the input value changes. The function will be called with the arguments: 'id', 'value' and 'session'. One can assign the same handler functions to several input elements.
 #' @param ... extra arguments that will be passed to fun when the event is triggered.
 #' @export
-changeHandler = function(id, fun,...,app=getApp(), on.create=FALSE, if.handler.exists = c("replace","add","skip")[1], session=getAppSession(app)) {
+changeHandler = function(id, fun,...,app=getApp(), on.create=FALSE, if.handler.exists = c("replace","add","skip")[1], session=getAppSession(app), no.authentication.required=FALSE) {
   #browser()
   if (app$verbose)
     display("\nadd changeHandler for ",id)
@@ -115,17 +117,20 @@ changeHandler = function(id, fun,...,app=getApp(), on.create=FALSE, if.handler.e
     observe({
       if (app$verbose)
         display("called event handler for ",s_id)
+
       input[[s_id]]
       if (hasWidgetValueChanged(s_id, input[[s_id]], on.create=s_on.create)) {
         if (app$verbose)
           display(" run handler...")
+        test.event.authentication(id=s_id, app=app)
+        
         myfun = s_fun
         do.call(myfun, c(list(id=s_id, value=input[[s_id]], session=session,app=getApp()),s_args))
       }
     })
   )
 
-  addEventHandlerToApp(id=id,call=ca,type="change",app=app, if.handler.exists=if.handler.exists)
+  addEventHandlerToApp(id=id,call=ca,type="change",app=app, if.handler.exists=if.handler.exists,  no.authentication.required=no.authentication.required)
 }
 
 
@@ -169,7 +174,7 @@ timerHandler = function(id,intervalMs, fun,...,app=getApp(), on.create=FALSE, if
 #'          row and column with index starting with 0
 #'  session: the current session object
 #' @param ... extra arguments that will be passed to fun when the event is triggered.
-aceHotkeyHandler = function(id, fun,..., app = getApp(),if.handler.exists = c("replace","add","skip")[1], session=getAppSession(app)) {
+aceHotkeyHandler = function(id, fun,..., app = getApp(),if.handler.exists = c("replace","add","skip")[1], session=getAppSession(app),no.authentication.required=FALSE) {
 
   if (app$verbose)
     display("\nadd aceHotkeyHandler for ",id)
@@ -180,8 +185,10 @@ aceHotkeyHandler = function(id, fun,..., app = getApp(),if.handler.exists = c("r
     observe({
       #restore.point("jdjfdgbfhdbgh")
       #browser()
+      
       if (wasAceHotkeyPressed(s_id, input[[s_id]])) {
         display(s_id, " has been pressed...")
+        test.event.authentication(id=s_id, app=app)
         res = input[[s_id]]
         text = isolate(input[[res$editorId]])
         li = c(list(keyId=s_id),res,
@@ -191,7 +198,7 @@ aceHotkeyHandler = function(id, fun,..., app = getApp(),if.handler.exists = c("r
       }
     })
   )
-  addEventHandlerToApp(id=id,call=ca,type="button",app=app, if.handler.exists=if.handler.exists)
+  addEventHandlerToApp(id=id,call=ca,type="button",app=app, if.handler.exists=if.handler.exists,no.authentication.required=no.authentication.required)
 }
 
 

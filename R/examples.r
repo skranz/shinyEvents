@@ -1,3 +1,25 @@
+auth.example = function() {
+  app = eventsApp(need.authentication = TRUE)
+  app$ui = fluidPage(
+    actionButton("authBtn","Authenticate me"),
+    actionButton("btn1","Press me only after authentication..."),
+    selectInput("sel","Dont change before authentication",choices = 1:10),
+    selectInput("sel2","Change me whenever you like",choices = 1:10),
+    uiOutput("out")
+  )
+  buttonHandler("authBtn",no.authentication.required = TRUE,function(...,app=getApp()) {
+    app$is.authenticated = TRUE
+    setUI("out","You are authenticated...")
+  })
+  buttonHandler("btn1",function(...,app=getApp()) {
+    setUI("out","Yep the button was pressed...")
+  })
+  changeHandler("sel",function(...){})
+  changeHandler("sel2",no.authentication.required = TRUE,function(...){})
+  viewApp(app)  
+  
+}
+
 image.click.example = function() {
   library(EconCurves)
   setwd("D:/libraries/EconCurves/")

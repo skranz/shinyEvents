@@ -59,6 +59,7 @@ eventsApp = function(set.as.default=TRUE, verbose=TRUE, single.instance=FALSE, a
   app$glob = glob
 
   app$need.authentication = need.authentication
+  app$events.without.authentication = NULL
   app$is.authenticated = FALSE
   app$no.events = no.events
   app$eventList = list()
@@ -152,6 +153,10 @@ setAppSession = function(session, app=getApp(global=TRUE)) {
   
   app$session.env = session.env 
   app
+}
+
+setAppIsAuthenticated = function(is.authenticated, app=getApp()) {
+  app$is.authenticated = is.authenticated
 }
 
 #' set the main ui object for the app
