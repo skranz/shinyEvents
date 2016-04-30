@@ -4,7 +4,7 @@
 \alias{customEventHandler}
 \title{A custom event handler. Need to write correct css.locator}
 \usage{
-customEventHandler(eventId, css.locator, event = "change",
+customEventHandler(eventId, fun, css.locator, event = "change",
   inner.js.code = NULL, shiny.value.code = NULL, id = NULL, ...)
 }
 \description{

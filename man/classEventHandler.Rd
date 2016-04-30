@@ -4,7 +4,7 @@
 \alias{classEventHandler}
 \title{An event handler for objects with given class}
 \usage{
-classEventHandler(class, event = "change", css.locator = "",
+classEventHandler(class, fun, event = "change", css.locator = "",
   inner.js.code = NULL, shiny.value.code = NULL, eventId = paste0(class,
   "_class_", event, "_event"), class.prefix = ".", ...)
 }

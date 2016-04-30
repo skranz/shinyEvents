@@ -1,3 +1,45 @@
+ace.code.completion.example = function() {
+  devtools::install_github("skranz/shinyAce")
+  
+  library(shinyAce)
+  app = eventsApp()
+  df = data.frame(colx=1:10,cola=2:11,colb=5)
+  var.env = as.environment(list(df=df))
+  
+  app$ui = fluidPage(
+    tags$script(HTML(autocomp.js())),
+    aceEditor("edit",mode = "r",autoComplete = "live",debounce = 10)
+  )
+  
+  
+  
+  appInitHandler(function(session,...) {
+    acob = shiny::observe({
+      inputId = "edit"
+      #value = getInputValue(paste0("shinyAce_", inputId, "_hint"))
+      value <- session$input[[paste0("shinyAce_", inputId, "_hint")]]
+      restore.point("ac.observer")
+      cat("\nstart observer", round(runif(1)*100))
+      if(is.null(value)) return(NULL)
+      str = substring(value$linebuffer,1,value$cursorPosition)
+      words = NULL
+      arg.words =  autcomp.function.args(str)
+      var.words = autocomp.vars(str,var.env=var.env)
+      col.words = autocomp.cols(str,var.env=var.env)
+      meta = c(rep("arg",length(arg.words)),rep("var",length(var.words)),rep("col",length(col.words)))
+      score = c(rep(103,length(arg.words)),rep(102,length(var.words)),rep(101,length(col.words)))      
+      words = c(arg.words,var.words,col.words)
+      df = data.frame(name=words,value=words,meta=meta, score=score)
+      set.autocomplete.list(inputId,df=df)
+
+      
+    })
+    
+    #acob$resume()
+  })
+  viewApp(app)
+}
+
 auth.example = function() {
   app = eventsApp(need.authentication = TRUE)
   app$ui = fluidPage(

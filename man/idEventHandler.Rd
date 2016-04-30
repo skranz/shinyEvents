@@ -4,7 +4,7 @@
 \alias{idEventHandler}
 \title{An event handler for an object with given id}
 \usage{
-idEventHandler(id, event = "change", css.locator = "",
+idEventHandler(id, fun, event = "change", css.locator = "",
   inner.js.code = NULL, shiny.value.code = NULL, eventId = paste0(id,
   "_id_", event, "_event"), ...)
 }

@@ -169,6 +169,7 @@ viewApp = function(app=getApp(),ui=NULL,launch.browser=rstudio::viewer,...) {
   runEventsApp(app,ui, launch.browser=launch.browser,...)
 }
 
+#' set the app ready to run
 appReadyToRun = function(app=getApp(), ui=app$ui) {
   restore.point("appReadyToRun")
   

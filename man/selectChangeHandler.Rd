@@ -5,7 +5,7 @@
 \title{Add an handler to an input or select that is called when the input value changes}
 \usage{
 selectChangeHandler(id, fun, ..., eventId = "selectChangeHandlerEvent",
-  jscript = buttonHandlerJS(eventId), app = getApp())
+  jscript = selectChangeHandlerJS(eventId), app = getApp())
 }
 \arguments{
 \item{id}{name of the input element}

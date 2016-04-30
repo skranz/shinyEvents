@@ -199,8 +199,14 @@ buttonHandlerJS = function(eventId="buttonHandlerEvent", imageEventId="imageClic
     if (tag === "IMG") {
       var offset = $(e.target).offset();
       //alert("Image click: offset= "+JSON.stringify(offset));
-      var x = (e.pageX - offset.left);
-      var y = (e.pageY - offset.top);
+      var oimg = document.getElementById(img.attr("id"));
+
+      var xratio = oimg.naturalWidth / img.width();
+      var yratio = oimg.naturalHeight / img.height();
+
+      //alert("Image click: offset= "+JSON.stringify(offset));
+      var x = (e.pageX - offset.left)*xratio;
+      var y = (e.pageY - offset.top)*yratio;
       Shiny.onInputChange("',imageEventId,'", {eventId: "',imageEventId,'", id: e.target.id, x: x, y: y, tag: tag, nonce: Math.random(), pageX: e.pageX, pageY: e.pageY});
       return;
     }
