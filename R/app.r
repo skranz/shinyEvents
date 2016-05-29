@@ -169,15 +169,56 @@ viewApp = function(app=getApp(),ui=NULL,launch.browser=rstudio::viewer,...) {
   runEventsApp(app,ui, launch.browser=launch.browser,...)
 }
 
+sc = function(..., collapse=NULL, sep="") {
+  args = list(...)
+  lens = sapply(args, length)
+  if (any(lens==0)) return(NULL)
+  paste0(..., collapse=collapse, sep=sep)
+}
+
+#' Set attributes of HTML elements
+#' @value selector a css selector as string
+#' @value attr a named list of attributes
+#' @export 
+setHtmlAttribute = function(selector=paste0(c(sc("#",id),sc(".",class)),collapse=", "),attr, id=NULL, class=NULL, app=getApp()) {
+  restore.point("setHtmlAttribute")
+  app$session$sendCustomMessage(type= 'shinyEventsSetAttribute', message=list(selector=selector, attr=attr))
+}
+
+#' Set css style of HTML elements
+#' @value selector a css selector as string
+#' @value attr a named list of css style attributes
+#' @export 
+setHtmlCSS = function(selector,attr, app=getApp()) {
+  restore.point("setHtmlCSS")
+  app$session$sendCustomMessage(type= 'shinyEventsSetCSS', message=list(selector=selector,attr=attr))
+}
+
+appendToHTML = function(html, selector="body", app=getApp()) {
+  app$session$sendCustomMessage(type= 'shinyEventsAppend', message=list(selector=selector,html=html))  
+}
+
 #' set the app ready to run
 appReadyToRun = function(app=getApp(), ui=app$ui) {
   restore.point("appReadyToRun")
   
   # js code for dsetUI
   js = '
+Shiny.addCustomMessageHandler("shinyEventsAppend", function(message) {
+  $(message.selector).append(message.html);
+});
+
 Shiny.addCustomMessageHandler("shinyEventsSetInnerHTML", function(message) {
   $("#"+message.id).html(message.html);
-});'
+});
+
+Shiny.addCustomMessageHandler("shinyEventsSetAttribute",function(message) {
+    $(message.selector).attr(message.attr);
+});
+Shiny.addCustomMessageHandler("shinyEventsSetCSS", function(message) {
+    $(message.selector).css(message.attr);
+});
+'
 
   
   if (!app$no.events) {
@@ -190,6 +231,8 @@ Shiny.addCustomMessageHandler("shinyEventsSetInnerHTML", function(message) {
       tags$script(HTML(js))
     )
   }
+  
+  
   if (isTRUE(app$glob$..HAS.BOTTOM.SCRIPT))
     ui = moveBottomScripts(ui)
   app$ui = ui

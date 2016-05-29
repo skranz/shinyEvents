@@ -87,13 +87,7 @@ registerEvent = function(eventId, jscript=NULL, app=getApp(), overwrite=FALSE) {
     return(event)
 
   restore.point("registerEvent")
-  
-  if (app$is.running) {
-    warning(paste0("The event ", eventId, " has been registered after the app has been running. Please register the event before you run the app, since the corresponding javascript must be added to the UI."))
-    eval(event$observer.call, app$session.env)
-  }
-  
-  
+
   # add event
   ca = substitute(env = list(eventId=eventId),
   observeEvent(input[[eventId]],{
@@ -114,6 +108,14 @@ registerEvent = function(eventId, jscript=NULL, app=getApp(), overwrite=FALSE) {
     observer = NULL
   )
   app$eventList[[eventId]] = event
+  
+  if (app$is.running) {
+    cat(paste0("The event ", eventId, " has been registered after the app has been running. The javascript code may not be run."))
+    appendToHTML(html=as.character(jscript))
+    eval(event$observer.call, app$session.env)
+  }
+
+  
   return(event)
 }
 
@@ -164,12 +166,33 @@ $("',css.locator,'").', event,'(function() {
 });
 ')
   jscript = paste0('
-$("body").on("',event,'", "',css.locator,'"),function() {
+$("body").on("',event,'", "',css.locator,'",function(e) {
   ',inner.js.code,'
   Shiny.onInputChange("',eventId,'", ', shiny.value.code,');
 });
 ')
   eventHandler(eventId=eventId,id=id,fun=fun,...,jscript=jscript)
+}
+
+#' Handler for an image click
+#' @param id id of the HTML img object
+#' @param fun the handler fun that will be called when the image is clicked
+#' @param ... additional arguments passed to the handler fun
+svgClickHandler = function(id, fun, ..., eventId=if(stop.propagation) "svgClickEvent" else "svgClickEventWithPropagation", class="clickable_svg", app=getApp(),no.authentication.required=FALSE, stop.propagation=TRUE) {
+  restore.point("svgClickHandler")
+  
+  sp = if (stop.propagation) "e.stopPropagation();" else ""
+  inner.js = paste0('
+      var offset = $(this).offset();
+      //alert("svg click: offset= "+JSON.stringify(offset));
+      var x = (e.pageX - offset.left);
+      var y = (e.pageY - offset.top);
+      ',sp,'
+      //alert("x="+x+" y="+y);
+  ')
+  shiny.value.code = paste0('{eventId: "',eventId,'", id: e.currentTarget.id, x: x, y: y, nonce: Math.random(), pageX: e.pageX, pageY: e.pageY}')
+  
+  customEventHandler(eventId = eventId,css.locator = paste0(".",class),event = "click",id = id,inner.js.code = inner.js, shiny.value.code = shiny.value.code, fun=fun,...)
 }
 
 
@@ -225,6 +248,8 @@ buttonHandlerJS = function(eventId="buttonHandlerEvent", imageEventId="imageClic
         Shiny.onInputChange("',eventId,'", {eventId: "',eventId,'", id: e.target.parentNode.id, tag: ptag, nonce: Math.random(), pageX: e.pageX, pageY: e.pageY});
       return;
       }
+      //alert(tag + " " + ptag);
+
     }
 ',img.code,'
   });'))

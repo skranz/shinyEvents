@@ -1,3 +1,80 @@
+svg.show.example = function() {
+  svg = '
+<svg width="420" height="300" id="ps_panequiz_5_test" class="clickable_svg">
+<defs>
+      <filter x="0" y="0" width="1" height="1" id="label_box">
+        <feFlood flood-color="white" flood-opacity="0.85"></feFlood>
+        <feComposite in="SourceGraphic"></feComposite>
+      </filter>
+    <marker id="arrow_head" class="arrow_head" markerWidth="10" markerHeight="10" refX="0" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" style="fill: black;"></path>
+    </marker>
+    
+</defs>
+<polyline points="60,174 400,174" id="test_curve_xcurve_1" class="curve" style="fill: none; stroke: #ff0000" visibility="visible" display="yes">
+<title></title></polyline>
+<polyline points="60,64 400,64" id="test_curve_xcurve_2" class="curve" style="fill: none; stroke: #ff7777" visibility="hidden">
+<title></title></polyline>
+<g id="xaxis" class="axis x-axis">
+<line x1="60" x2="410" y1="250" y2="250" class="axis-main"></line>
+<line x1="60" x2="60" y1="250" y2="260" class="axis-tick"></line>
+<line x1="128" x2="128" y1="250" y2="260" class="axis-tick"></line>
+<line x1="196" x2="196" y1="250" y2="260" class="axis-tick"></line>
+<line x1="264" x2="264" y1="250" y2="260" class="axis-tick"></line>
+<line x1="332" x2="332" y1="250" y2="260" class="axis-tick"></line>
+<line x1="400" x2="400" y1="250" y2="260" class="axis-tick"></line>
+<text x="60" y="275" class="axis-ticklabel" text-anchor="middle">0</text>
+<text x="128" y="275" class="axis-ticklabel" text-anchor="middle">20</text>
+<text x="196" y="275" class="axis-ticklabel" text-anchor="middle">40</text>
+<text x="264" y="275" class="axis-ticklabel" text-anchor="middle">60</text>
+<text x="332" y="275" class="axis-ticklabel" text-anchor="middle">80</text>
+<text x="400" y="275" class="axis-ticklabel" text-anchor="middle">100</text></g>
+<g id="yaxis" class="axis y-axis">
+<line x1="50" x2="50" y1="240" y2="20" class="axis-main"></line>
+<line x1="40" x2="50" y1="240" y2="240" class="axis-tick"></line>
+<line x1="40" x2="50" y1="196" y2="196" class="axis-tick"></line>
+<line x1="40" x2="50" y1="152" y2="152" class="axis-tick"></line>
+<line x1="40" x2="50" y1="108" y2="108" class="axis-tick"></line>
+<line x1="40" x2="50" y1="64" y2="64" class="axis-tick"></line>
+<line x1="40" x2="50" y1="20" y2="20" class="axis-tick"></line>
+<text x="37" y="240" class="axis-ticklabel" text-anchor="end" alignment-baseline="middle">0</text>
+<text x="37" y="196" class="axis-ticklabel" text-anchor="end" alignment-baseline="middle">20</text>
+<text x="37" y="152" class="axis-ticklabel" text-anchor="end" alignment-baseline="middle">40</text>
+<text x="37" y="108" class="axis-ticklabel" text-anchor="end" alignment-baseline="middle">60</text>
+<text x="37" y="64" class="axis-ticklabel" text-anchor="end" alignment-baseline="middle">80</text>
+<text x="37" y="20" class="axis-ticklabel" text-anchor="end" alignment-baseline="middle">100</text></g>
+<text x="60" y="174" id="geomlabel_test_curve_xcurve_1" class="boxed-label" text-anchor="start" visibility="visible" display="yes">
+<title></title>
+x1</text>
+<text x="417" y="64" id="geomlabel_test_curve_xcurve_2" class="boxed-label" text-anchor="end" visibility="hidden" display="none">
+<title></title>
+x2</text>
+</svg>  
+  '
+app = eventsApp()
+app$ui = fluidPage(
+  actionButton("btn","Go"),
+  actionButton("btn1","Show"),
+  uiOutput("out") 
+)
+buttonHandler("btn", function(...) {
+  html = HTML(svg)
+  setUI("out",html)
+  svgClickHandler(id=NULL, fun=function(...) {
+    args = list(...)
+    restore.point("svgclick")
+    cat("\nSVG has been clicked!")
+  })
+  setHtmlAttribute("#test_curve_xcurve_2",list(display="yes"))
+})
+buttonHandler("btn1", function(...) {
+  cat("make visible...")
+  setHtmlAttribute("#test_curve_xcurve_2",list(visibility="visible", display="yes"))
+})
+  
+viewApp(app)
+}
+
 ace.code.completion.example = function() {
   devtools::install_github("skranz/shinyAce")
   
@@ -93,6 +170,18 @@ button.image.click = function() {
   viewApp(app)
 }
 
+setattr.example = function() {
+  app = eventsApp()
+  
+  app$ui = fluidPage(
+    actionButton("btn",label="Hide"),
+    div(id="div1",p("I am a div"))
+  )
+  buttonHandler("btn", function(...) {
+    setHtmlCSS("#div1",list(visibility="hidden"))
+  })
+  viewApp(app)
+}
 
 
 setui.example = function() {
