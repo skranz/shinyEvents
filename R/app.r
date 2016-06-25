@@ -24,11 +24,21 @@ setAppHasBottomScript = function(has.bottom.script=FALSE, app=getApp()) {
 #' If app is not running, mark script to be added at the bottom and return NULL
 #' If app is already running return script directly
 bottomScript = function(..., app=getApp()) {
-  tag = tags$script(...)
+  tag=tags$script(...)
   attr(tag,"isBottomScript") <- TRUE
   if (!isTRUE(app$is.running)) app$glob$..HAS.BOTTOM.SCRIPT = TRUE
   tag
 }
+
+#' If app is not running, mark script to be added at the bottom and return NULL
+#' If app is already running return script directly
+singletonBottomScript = function(..., app=getApp()) {
+  tag=singleton(tags$script(...)) 
+  attr(tag,"isBottomScript") <- TRUE
+  if (!isTRUE(app$is.running)) app$glob$..HAS.BOTTOM.SCRIPT = TRUE
+  tag
+}
+
 
 #' Given a tag object, extract out any children of tags$head
 #' and return them separate from the body.
@@ -52,12 +62,13 @@ moveBottomScripts <- function(ui, reset.app=FALSE) {
 }
 
 #' Generate an empty shiny events app
-eventsApp = function(set.as.default=TRUE, verbose=TRUE, single.instance=FALSE, add.events = getDefaultAppEvents(), no.events=FALSE, need.authentication=FALSE) {
+eventsApp = function(set.as.default=TRUE, verbose=TRUE, single.instance=FALSE, add.events = getDefaultAppEvents(), no.events=FALSE, need.authentication=FALSE, adapt.ui = TRUE) {
   app = new.env()
   glob = new.env(parent=globalenv())
   
   app$glob = glob
 
+  app$.adapt.ui = adapt.ui 
   app$need.authentication = need.authentication
   app$events.without.authentication = NULL
   app$is.authenticated = FALSE
@@ -180,7 +191,7 @@ sc = function(..., collapse=NULL, sep="") {
 #' @value selector a css selector as string
 #' @value attr a named list of attributes
 #' @export 
-setHtmlAttribute = function(selector=paste0(c(sc("#",id),sc(".",class)),collapse=", "),attr, id=NULL, class=NULL, app=getApp()) {
+setHtmlAttribute = function(id=NULL, attr, class=NULL,selector=paste0(c(sc("#",id),sc(".",class)),collapse=", "), app=getApp()) {
   restore.point("setHtmlAttribute")
   app$session$sendCustomMessage(type= 'shinyEventsSetAttribute', message=list(selector=selector, attr=attr))
 }
@@ -189,10 +200,24 @@ setHtmlAttribute = function(selector=paste0(c(sc("#",id),sc(".",class)),collapse
 #' @value selector a css selector as string
 #' @value attr a named list of css style attributes
 #' @export 
-setHtmlCSS = function(selector,attr, app=getApp()) {
+setHtmlCSS = function(id=NULL,attr,class=NULL,selector=paste0(c(sc("#",id),sc(".",class)),collapse=", "), app=getApp()) {
   restore.point("setHtmlCSS")
   app$session$sendCustomMessage(type= 'shinyEventsSetCSS', message=list(selector=selector,attr=attr))
 }
+
+setHtmlHide = function(id=NULL, class=NULL, display="none") {
+  setHtmlCSS(id=id,class=class, attr=list(display = display))
+}
+
+setHtmlShow = function(id=NULL, class=NULL, display="block") {
+  setHtmlCSS(id=id,class=class, attr=list(display = display))
+}
+
+
+evalJS = function(js, app=getApp()) {
+  app$session$sendCustomMessage(type= 'shinyEvalJS', message=list(code=js))
+}
+
 
 appendToHTML = function(html, selector="body", app=getApp()) {
   app$session$sendCustomMessage(type= 'shinyEventsAppend', message=list(selector=selector,html=html))  
@@ -202,39 +227,48 @@ appendToHTML = function(html, selector="body", app=getApp()) {
 appReadyToRun = function(app=getApp(), ui=app$ui) {
   restore.point("appReadyToRun")
   
-  # js code for dsetUI
-  js = '
-Shiny.addCustomMessageHandler("shinyEventsAppend", function(message) {
-  $(message.selector).append(message.html);
-});
+  if (isTRUE(app$.adapt.ui)) {
+    # js code for dsetUI
+    js = '
+  Shiny.addCustomMessageHandler("shinyEvalJS", function(message) {
+    eval(message.code);
+  });
 
-Shiny.addCustomMessageHandler("shinyEventsSetInnerHTML", function(message) {
-  $("#"+message.id).html(message.html);
-});
-
-Shiny.addCustomMessageHandler("shinyEventsSetAttribute",function(message) {
-    $(message.selector).attr(message.attr);
-});
-Shiny.addCustomMessageHandler("shinyEventsSetCSS", function(message) {
-    $(message.selector).css(message.attr);
-});
-'
-
+  Shiny.addCustomMessageHandler("shinyEventsAppend", function(message) {
+    $(message.selector).append(message.html);
+  });
   
-  if (!app$no.events) {
-    script.tags = lapply(app$eventList, function(event) {
-      event$jscript
-    })
-    ui = tagList(
-      ui,
-      script.tags,
-      tags$script(HTML(js))
-    )
+  Shiny.addCustomMessageHandler("shinyEventsSetInnerHTML", function(message) {
+    //alert("selector: "+ message.selector + " html: "+ message.html);
+    $(message.selector).html(message.html);
+  });
+  
+  Shiny.addCustomMessageHandler("shinyEventsSetAttribute",function(message) {
+      $(message.selector).attr(message.attr);
+  });
+  Shiny.addCustomMessageHandler("shinyEventsSetCSS", function(message) {
+      $(message.selector).css(message.attr);
+  });
+  '
+  
+    
+    if (!app$no.events) {
+      script.tags = lapply(app$eventList, function(event) {
+        event$jscript
+      })
+      ui = tagList(
+        ui,
+        script.tags,
+        tags$script(HTML(js))
+      )
+    }
+    
+    
+    if (isTRUE(app$glob$..HAS.BOTTOM.SCRIPT))
+      ui = moveBottomScripts(ui)
+    
   }
   
-  
-  if (isTRUE(app$glob$..HAS.BOTTOM.SCRIPT))
-    ui = moveBottomScripts(ui)
   app$ui = ui
   app$is.running = TRUE
 }

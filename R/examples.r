@@ -65,11 +65,11 @@ buttonHandler("btn", function(...) {
     restore.point("svgclick")
     cat("\nSVG has been clicked!")
   })
-  setHtmlAttribute("#test_curve_xcurve_2",list(display="yes"))
+  setHtmlAttribute("test_curve_xcurve_2",list(display="yes"))
 })
 buttonHandler("btn1", function(...) {
   cat("make visible...")
-  setHtmlAttribute("#test_curve_xcurve_2",list(visibility="visible", display="yes"))
+  setHtmlAttribute("test_curve_xcurve_2",list(visibility="visible", display="yes"))
 })
   
 viewApp(app)
@@ -178,7 +178,7 @@ setattr.example = function() {
     div(id="div1",p("I am a div"))
   )
   buttonHandler("btn", function(...) {
-    setHtmlCSS("#div1",list(visibility="hidden"))
+    setHtmlCSS("div1",list(visibility="hidden"))
   })
   viewApp(app)
 }
@@ -190,28 +190,23 @@ setui.example = function() {
   app = eventsApp()
   
   app$ui = fluidPage(
-    nestedSelector(id = "rbg",
-      selectors=list(
-        section = list(
-          choices=list("A"="A","B"="B"),
-          contents=list("div1","div2")
-        )
-      )
-    )$ui,
-    hidden_div(id="div1",uiOutput("out"),uiOutput("out1"),"div1",actionButton("btn1",label="Click")),
-    hidden_div(id="div2","div2",actionButton("btn",label="Click")),
-    div(id="div3","div3",uiOutput("out3"))
+    radioBtnGroup(id = "rbg",
+      labels = c("A","B"),
+      show.hide.containers = c("div1","div2")
+    ),
+    div(id="div1","div1 (shown when A)",uiOutput("out1a"),uiOutput("out1b")),
+    hidden_div(id="div2","div2 (shown when B)",actionButton("btn",label="Click"),uiOutput("out2a"),uiOutput("out2b")),
+    div(id="div3","div3 (always shown)",uiOutput("out3"))
     
   )
   buttonHandler("btn", function(...) {
     txt = as.character(runif(1))
-    setUI("out3",txt)
-    setUI("out1",txt) # does not work correctly, since out1 is inside a hidden div
-    dsetUI("out",txt) # need dsetUI since out is inside a hidden div
+    setUI("out3",paste0("out 3 ",txt))
+    setUI("out1a",paste0("out 1a ",txt)) # does not work correctly, since out1 is inside a hidden div
+    setUI("out2a",paste0("out 2a ",txt)) # need dsetUI since out is inside a hidden div
+    dsetUI("out2b",paste0("out 2b ",txt)) # need dsetUI since out is inside a hidden div
+    dsetUI("out1b",paste0("out 1b ",txt)) # need dsetUI since out is inside a hidden div
     cat("\n setUI to ",txt)
-  })
-  buttonHandler("btn1", function(...) {
-    cat("\n whatever... ")
   })
 
   viewApp(app)
