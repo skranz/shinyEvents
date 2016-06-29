@@ -4,7 +4,9 @@
 \alias{setHtmlAttribute}
 \title{Set attributes of HTML elements}
 \usage{
-setHtmlAttribute(selector, attr, app = getApp())
+setHtmlAttribute(id = NULL, attr, class = NULL,
+  selector = paste0(c(sc("#", id), sc(".", class)), collapse = ", "),
+  app = getApp())
 }
 \description{
 Set attributes of HTML elements

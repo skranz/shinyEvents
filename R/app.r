@@ -205,20 +205,33 @@ setHtmlCSS = function(id=NULL,attr,class=NULL,selector=paste0(c(sc("#",id),sc(".
   app$session$sendCustomMessage(type= 'shinyEventsSetCSS', message=list(selector=selector,attr=attr))
 }
 
-setHtmlHide = function(id=NULL, class=NULL, display="none") {
-  setHtmlCSS(id=id,class=class, attr=list(display = display))
+#' Hide HTML elements
+#' @value selector a css selector as string
+#' @value attr a named list of css style attributes
+#' @export 
+setHtmlHide = function(id=NULL, class=NULL, display="none",selector=paste0(c(sc("#",id),sc(".",class)),collapse=", ")) {
+  setHtmlCSS(id=id,class=class, attr=list(display = display),selector=selector)
 }
 
-setHtmlShow = function(id=NULL, class=NULL, display="block") {
-  setHtmlCSS(id=id,class=class, attr=list(display = display))
+#' Show HTML elements
+#' @value selector a css selector as string
+#' @value attr a named list of css style attributes
+#' @export 
+setHtmlShow = function(id=NULL, class=NULL, display="block",selector=paste0(c(sc("#",id),sc(".",class)),collapse=", ")) {
+  setHtmlCSS(id=id,class=class, attr=list(display = display), selector=selector)
 }
 
-
+#' Evaluate arbitrary java script code in the client's web browser
+#' @value js the java script code to be evaluated
+#' @export 
 evalJS = function(js, app=getApp()) {
   app$session$sendCustomMessage(type= 'shinyEvalJS', message=list(code=js))
 }
 
-
+#' Append HTML code to a DOM element
+#' @value html the html code as string
+#' @value selector a css selector as string
+#' @export 
 appendToHTML = function(html, selector="body", app=getApp()) {
   app$session$sendCustomMessage(type= 'shinyEventsAppend', message=list(selector=selector,html=html))  
 }

@@ -4,7 +4,8 @@
 \alias{setHtmlCSS}
 \title{Set css style of HTML elements}
 \usage{
-setHtmlCSS(selector, attr, app = getApp())
+setHtmlCSS(id = NULL, attr, class = NULL, selector = paste0(c(sc("#", id),
+  sc(".", class)), collapse = ", "), app = getApp())
 }
 \description{
 Set css style of HTML elements

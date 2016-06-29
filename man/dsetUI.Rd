@@ -4,7 +4,8 @@
 \alias{dsetUI}
 \title{Directly setUI , also works for hidden UI}
 \usage{
-dsetUI(id, ui, app = getApp(), ...)
+dsetUI(id, ui, selector = paste0("#", id, collapse = ", "), app = getApp(),
+  ...)
 }
 \description{
 Directly setUI , also works for hidden UI
