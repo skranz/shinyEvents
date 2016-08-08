@@ -151,10 +151,11 @@ setAppSession = function(session, app=getApp(global=TRUE)) {
   
   # Copy initially defined output renderers
   # into session$output object
-  app$initial.output = app$output
+  if (is.null(app[["initial.output"]]))
+    app$initial.output = app$output
   app$output = session$output
   for (id in names(app$initial.output)) {
-    app$output[[id]] = app$initial.output[[id]]
+    try(app$output[[id]] <- app$initial.output[[id]])
   }
     
   session.env = new.env()
@@ -217,8 +218,8 @@ setHtmlHide = function(id=NULL, class=NULL, display="none",selector=paste0(c(sc(
 #' @value selector a css selector as string
 #' @value attr a named list of css style attributes
 #' @export 
-setHtmlShow = function(id=NULL, class=NULL, display="block",selector=paste0(c(sc("#",id),sc(".",class)),collapse=", ")) {
-  setHtmlCSS(id=id,class=class, attr=list(display = display), selector=selector)
+setHtmlShow = function(id=NULL, class=NULL, display="block",visibility="visible",selector=paste0(c(sc("#",id),sc(".",class)),collapse=", ")) {
+  setHtmlCSS(id=id,class=class, attr=list(display = display, visibility=visibility), selector=selector)
 }
 
 #' Evaluate arbitrary java script code in the client's web browser
@@ -236,6 +237,15 @@ appendToHTML = function(html, selector="body", app=getApp()) {
   app$session$sendCustomMessage(type= 'shinyEventsAppend', message=list(selector=selector,html=html))  
 }
 
+#' Prpend HTML code to a DOM element
+#' @value html the html code as string
+#' @value selector a css selector as string
+#' @export 
+prependToHTML = function(html, selector="body", app=getApp()) {
+  app$session$sendCustomMessage(type= 'shinyEventsAppend', message=list(selector=selector,html=html))  
+}
+
+
 #' set the app ready to run
 appReadyToRun = function(app=getApp(), ui=app$ui) {
   restore.point("appReadyToRun")
@@ -249,6 +259,9 @@ appReadyToRun = function(app=getApp(), ui=app$ui) {
 
   Shiny.addCustomMessageHandler("shinyEventsAppend", function(message) {
     $(message.selector).append(message.html);
+  });
+  Shiny.addCustomMessageHandler("shinyEventsPrepend", function(message) {
+    $(message.selector).prepend(message.html);
   });
   
   Shiny.addCustomMessageHandler("shinyEventsSetInnerHTML", function(message) {
