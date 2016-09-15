@@ -245,10 +245,40 @@ prependToHTML = function(html, selector="body", app=getApp()) {
   app$session$sendCustomMessage(type= 'shinyEventsAppend', message=list(selector=selector,html=html))  
 }
 
+#' Call a javascript function or method with R arguments
+#' @value .fun name of the function or method to be called, e.g. "$("#mydiv").attr"
+#' @value ... function argument in the same order as in the javascript function. Names will not be used. 
+#' @export 
+callJS = function(.fun,..., .args=NULL, .app=getApp()) {
+  if (is.null(.args)) .args = list(...)
+  restore.point("callJS")
+  
+  names(.args) = NULL
+  args.code = sc("message.args[",seq_along(.args)-1,"]", collapse=",")
+  code = paste0(.fun,"(",args.code,");")
+  .app$session$sendCustomMessage(type= 'shinyEvalJS', message=list(code=code,args=.args))
+
+  #.app$session$sendCustomMessage(type= 'shinyEventsCallJS', message=list(fun=.fun,args=.args))    
+}
 
 #' set the app ready to run
 appReadyToRun = function(app=getApp(), ui=app$ui) {
   restore.point("appReadyToRun")
+  
+  # Shiny.addCustomMessageHandler("shinyEventsCallJS", function(message) {
+  #   var nargs = message.args.length
+  #   if (nargs == 0) {
+  #     eval(message.fun+"();");
+  #   } else if (nargs == 1) {
+  #     eval(message.fun+"(message.args[0]);");
+  #   } else {
+  #     var sargs = "message.args[0]";
+  #     for (i = 1; i<nargs; i++) {
+  #       sargs += ", message.args["+i+"]";
+  #     }
+  #     eval(message.fun+"("+sargs+");");
+  #   }
+  # });
   
   if (isTRUE(app$.adapt.ui)) {
     # js code for dsetUI

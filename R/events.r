@@ -236,23 +236,35 @@ buttonHandlerJS = function(eventId="buttonHandlerEvent", imageEventId="imageClic
     ')
   }
   
-  res = tags$script(paste0('
+  res = tags$script(HTML(paste0('
+  shinyEventsExtractFormValues = function(id) {
+    var sel = $("#"+id).data("form-selector");
+    var vals = {};
+    if (typeof sel === "undefined") return(null);
+    $(sel).each(function( index ) {
+      var valId = $(this).attr("id");
+      vals[valId] = $(this).val();
+    });
+
+    return vals;
+  } 
+
   $(document).on("click", function (e) {
     var tag = e.target.nodeName;
     if (tag === "BUTTON") {
-      Shiny.onInputChange("',eventId,'", {eventId: "',eventId,'", id: e.target.id, tag: tag, nonce: Math.random(), pageX: e.pageX, pageY: e.pageY});
+      Shiny.onInputChange("',eventId,'", {eventId: "',eventId,'", id: e.target.id, tag: tag, nonce: Math.random(), pageX: e.pageX, pageY: e.pageY, formValues: shinyEventsExtractFormValues(e.target.id)});
       return;
     } else {
       var ptag = e.target.parentNode.nodeName;
       if (ptag === "BUTTON" || ptag ==="BUTTON") {
-        Shiny.onInputChange("',eventId,'", {eventId: "',eventId,'", id: e.target.parentNode.id, tag: ptag, nonce: Math.random(), pageX: e.pageX, pageY: e.pageY});
+        Shiny.onInputChange("',eventId,'", {eventId: "',eventId,'", id: e.target.parentNode.id, tag: ptag, nonce: Math.random(), pageX: e.pageX, pageY: e.pageY, formValues: shinyEventsExtractFormValues(e.target.parentNode.id)});
       return;
       }
       //alert(tag + " " + ptag);
 
     }
 ',img.code,'
-  });'))
+  });')))
   return(res)
 }
 
@@ -308,3 +320,8 @@ documentClickHandlerJS = function(eventId="documentClickHandlerEvent") {
   });'))
 }
 
+#' Transform a vector of ids to a jQuery selector string
+#' @export
+ids2sel= function(ids) {
+  sc("#",ids, collapse=", ")
+}

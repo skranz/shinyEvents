@@ -1,3 +1,40 @@
+
+
+form.example = function() {
+  app = eventsApp()
+  app$ui = bootstrapPage(
+    p(id="myp","My page"),
+    textInput("mytext",label = "Text",value = "Start text"),
+    textInput("mytext2",label = "Text",value = "Start text2"),
+    
+    actionButton("btn","Click me", "data-form-selector"=ids2sel(c("mytext","mytext2")))
+  )
+  buttonHandler("btn", function(...) {
+    args = list(...)
+    restore.point("btn.click")
+    print(args$formValues)
+    cat("button was clicked")
+    
+  })
+  viewApp(app)
+}
+
+
+
+callJS.example = function() {
+  app = eventsApp()
+  app$ui = bootstrapPage(
+    p(id="myp","My page"),
+    actionButton("btn","Click me")
+  )
+  buttonHandler("btn", function(...) {
+    appendToHTML("Extra!" ,"#myp")
+    callJS('$("#myp").css',list("font-size" = 20, "color" = "blue"))
+    callJS("alert","Hi!")
+  })
+  viewApp(app)
+}
+
 svg.show.example = function() {
   svg = '
 <svg width="420" height="300" id="ps_panequiz_5_test" class="clickable_svg">
@@ -223,6 +260,32 @@ bottom.script.example = function() {
   moveBottomScripts(app$ui)
   viewApp(app)
 
+}
+
+dyn.ui.input.error.example = function() {
+  library(shiny)
+
+  myUI = function() {
+    textInput("mytext",paste0("mytext ", sample.int(10000,1)), value=sample.int(10000,1))
+  }
+  
+  ui = fluidPage(
+    title = 'Dynamic UI Input Error',
+    uiOutput("myUI"),
+    actionButton("myBtn","Click me")
+  )
+  
+  server = function(input, output, session) {
+    output$myUI <- renderUI(myUI())
+    
+    observeEvent(input$myBtn,{
+      text = isolate(input$mytext)
+      cat("Value of text input:", text)
+      output$myUI <- renderUI(myUI())
+    })
+  }
+  runApp(list(ui=ui,server=server),launch.browser=rstudio::viewer) 
+  
 }
 
 

@@ -5,7 +5,8 @@
 \title{Show HTML elements}
 \usage{
 setHtmlShow(id = NULL, class = NULL, display = "block",
-  selector = paste0(c(sc("#", id), sc(".", class)), collapse = ", "))
+  visibility = "visible", selector = paste0(c(sc("#", id), sc(".", class)),
+  collapse = ", "))
 }
 \description{
 Show HTML elements
