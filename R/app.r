@@ -90,12 +90,15 @@ eventsApp = function(set.as.default=TRUE, verbose=TRUE, single.instance=FALSE, a
   app$server = function(session, input, output) {  
     app = getApp()
     app$is.running = TRUE
-    cat(paste0("Started new session at ", Sys.time()))
+    app$in.init = TRUE
+    cat(paste0("\nStarted new session at ", Sys.time()))
+    #stop("Stop in app$server")
     app = setAppSession(session,app)
     session = app$session
     addEventsToSession(app=app)
     addHandlersToSession(app=app)
     app$initHandler(session=session, input=input, output=output, app=app)
+    app$in.init = FALSE
   }
   if (set.as.default)
     setApp(app)
@@ -220,6 +223,7 @@ setHtmlHide = function(id=NULL, class=NULL, display="none",selector=paste0(c(sc(
 #' @export 
 setHtmlShow = function(id=NULL, class=NULL, display="block",visibility="visible",selector=paste0(c(sc("#",id),sc(".",class)),collapse=", ")) {
   setHtmlCSS(id=id,class=class, attr=list(display = display, visibility=visibility), selector=selector)
+  evalJS(paste0("$('",selector,"').trigger('shown');"))
 }
 
 #' Evaluate arbitrary java script code in the client's web browser

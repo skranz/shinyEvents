@@ -1,4 +1,13 @@
+rtutor.example = function() {
+  restore.point.options(display.restore.point = TRUE)
+  library(RTutor3)
+  setwd("D:/libraries/RTutor3/")
+  file = "test.Rmd"
+  ps = create.ps(file=file)
+  app = rtutorApp(ps)
+  viewApp(app,launch.browser = rstudio::viewer)
 
+}
 
 form.example = function() {
   app = eventsApp()
