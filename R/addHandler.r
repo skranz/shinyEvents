@@ -83,15 +83,9 @@ addEventHandlerToApp = function(id, call, type="unknown", app = getApp(),session
       destroyHandlerObserver(id,app=app)
     app$handlers[[id]] = list(id=id, call=call, type=type, observer=NULL, call.env=call.env)
     if (app$is.running) {
-<<<<<<< HEAD
-      app$handlers[[id]]$call.env = initHandlerCallEnv(call.env,session.env)      
-      app$handlers[[id]]$observer = eval(call,app$handlers[[id]]$call.env)
-      #app$handlers[[n]]$observer = eval(call,session.env)
-=======
       app$handlers[[id]]$call.env = initHandlerCallEnv(call.env,session.env)
       app$handlers[[id]]$observer = eval(call,app$handlers[[id]]$call.env)
       #app$handlers[[id]]$observer = eval(call,session.env)
->>>>>>> refs/remotes/origin/develop
     }
 
   } else {
