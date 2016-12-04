@@ -6,7 +6,7 @@
 \usage{
 aceHotkeyHandler(id, fun, ..., app = getApp(),
   if.handler.exists = c("replace", "add", "skip")[1],
-  session = getAppSession(app))
+  session = getAppSession(app), no.authentication.required = FALSE)
 }
 \arguments{
 \item{id}{name of the button}

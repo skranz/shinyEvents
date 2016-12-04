@@ -1,31 +1,302 @@
-jsclick.example = function() {
-  app = eventsApp()
-  library(shinyjs)
-  app$ui = fluidPage(
-    shinyjs::useShinyjs(),
-    inlineCSS(list(
-      .yellow = "background: #ffffaa",
-      .blue = "background: #aaaaff"
-    )),    
-    div(id="mydiv",
-      class="yellow",
-      p("Click on the text!")
-    )
-  )
-  y=list(k=12,env=as.environment(list(a=5)))
-  jsclickHandler("mydiv",x = 230, y= y,  function(app,id,x,y,...) {
-    restore.point("inclickhandler")
-    toggleClass(id, "blue")
-    cat("\nclick")
-    cat("x = ",x)
-    cat(y$env$a)
-  })
-  h = app$handlers[[1]]
-  h
-  as.list(h$call.env)
-  #eval(h$call, h$call.env)
-  viewApp()
+rtutor.example = function() {
+  restore.point.options(display.restore.point = TRUE)
+  library(RTutor3)
+  setwd("D:/libraries/RTutor3/")
+  file = "test.Rmd"
+  ps = create.ps(file=file)
+  app = rtutorApp(ps)
+  viewApp(app,launch.browser = rstudio::viewer)
+
 }
+
+form.example = function() {
+  app = eventsApp()
+  app$ui = bootstrapPage(
+    p(id="myp","My page"),
+    textInput("mytext",label = "Text",value = "Start text"),
+    textInput("mytext2",label = "Text",value = "Start text2"),
+    
+    actionButton("btn","Click me", "data-form-selector"=ids2sel(c("mytext","mytext2")))
+  )
+  buttonHandler("btn", function(...) {
+    args = list(...)
+    restore.point("btn.click")
+    print(args$formValues)
+    cat("button was clicked")
+    
+  })
+  viewApp(app)
+}
+
+
+
+callJS.example = function() {
+  app = eventsApp()
+  app$ui = bootstrapPage(
+    p(id="myp","My page"),
+    actionButton("btn","Click me")
+  )
+  buttonHandler("btn", function(...) {
+    appendToHTML("Extra!" ,"#myp")
+    callJS('$("#myp").css',list("font-size" = 20, "color" = "blue"))
+    callJS("alert","Hi!")
+  })
+  viewApp(app)
+}
+
+svg.show.example = function() {
+  svg = '
+<svg width="420" height="300" id="ps_panequiz_5_test" class="clickable_svg">
+<defs>
+      <filter x="0" y="0" width="1" height="1" id="label_box">
+        <feFlood flood-color="white" flood-opacity="0.85"></feFlood>
+        <feComposite in="SourceGraphic"></feComposite>
+      </filter>
+    <marker id="arrow_head" class="arrow_head" markerWidth="10" markerHeight="10" refX="0" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" style="fill: black;"></path>
+    </marker>
+    
+</defs>
+<polyline points="60,174 400,174" id="test_curve_xcurve_1" class="curve" style="fill: none; stroke: #ff0000" visibility="visible" display="yes">
+<title></title></polyline>
+<polyline points="60,64 400,64" id="test_curve_xcurve_2" class="curve" style="fill: none; stroke: #ff7777" visibility="hidden">
+<title></title></polyline>
+<g id="xaxis" class="axis x-axis">
+<line x1="60" x2="410" y1="250" y2="250" class="axis-main"></line>
+<line x1="60" x2="60" y1="250" y2="260" class="axis-tick"></line>
+<line x1="128" x2="128" y1="250" y2="260" class="axis-tick"></line>
+<line x1="196" x2="196" y1="250" y2="260" class="axis-tick"></line>
+<line x1="264" x2="264" y1="250" y2="260" class="axis-tick"></line>
+<line x1="332" x2="332" y1="250" y2="260" class="axis-tick"></line>
+<line x1="400" x2="400" y1="250" y2="260" class="axis-tick"></line>
+<text x="60" y="275" class="axis-ticklabel" text-anchor="middle">0</text>
+<text x="128" y="275" class="axis-ticklabel" text-anchor="middle">20</text>
+<text x="196" y="275" class="axis-ticklabel" text-anchor="middle">40</text>
+<text x="264" y="275" class="axis-ticklabel" text-anchor="middle">60</text>
+<text x="332" y="275" class="axis-ticklabel" text-anchor="middle">80</text>
+<text x="400" y="275" class="axis-ticklabel" text-anchor="middle">100</text></g>
+<g id="yaxis" class="axis y-axis">
+<line x1="50" x2="50" y1="240" y2="20" class="axis-main"></line>
+<line x1="40" x2="50" y1="240" y2="240" class="axis-tick"></line>
+<line x1="40" x2="50" y1="196" y2="196" class="axis-tick"></line>
+<line x1="40" x2="50" y1="152" y2="152" class="axis-tick"></line>
+<line x1="40" x2="50" y1="108" y2="108" class="axis-tick"></line>
+<line x1="40" x2="50" y1="64" y2="64" class="axis-tick"></line>
+<line x1="40" x2="50" y1="20" y2="20" class="axis-tick"></line>
+<text x="37" y="240" class="axis-ticklabel" text-anchor="end" alignment-baseline="middle">0</text>
+<text x="37" y="196" class="axis-ticklabel" text-anchor="end" alignment-baseline="middle">20</text>
+<text x="37" y="152" class="axis-ticklabel" text-anchor="end" alignment-baseline="middle">40</text>
+<text x="37" y="108" class="axis-ticklabel" text-anchor="end" alignment-baseline="middle">60</text>
+<text x="37" y="64" class="axis-ticklabel" text-anchor="end" alignment-baseline="middle">80</text>
+<text x="37" y="20" class="axis-ticklabel" text-anchor="end" alignment-baseline="middle">100</text></g>
+<text x="60" y="174" id="geomlabel_test_curve_xcurve_1" class="boxed-label" text-anchor="start" visibility="visible" display="yes">
+<title></title>
+x1</text>
+<text x="417" y="64" id="geomlabel_test_curve_xcurve_2" class="boxed-label" text-anchor="end" visibility="hidden" display="none">
+<title></title>
+x2</text>
+</svg>  
+  '
+app = eventsApp()
+app$ui = fluidPage(
+  actionButton("btn","Go"),
+  actionButton("btn1","Show"),
+  uiOutput("out") 
+)
+buttonHandler("btn", function(...) {
+  html = HTML(svg)
+  setUI("out",html)
+  svgClickHandler(id=NULL, fun=function(...) {
+    args = list(...)
+    restore.point("svgclick")
+    cat("\nSVG has been clicked!")
+  })
+  setHtmlAttribute("test_curve_xcurve_2",list(display="yes"))
+})
+buttonHandler("btn1", function(...) {
+  cat("make visible...")
+  setHtmlAttribute("test_curve_xcurve_2",list(visibility="visible", display="yes"))
+})
+  
+viewApp(app)
+}
+
+ace.code.completion.example = function() {
+  devtools::install_github("skranz/shinyAce")
+  
+  library(shinyAce)
+  app = eventsApp()
+  df = data.frame(colx=1:10,cola=2:11,colb=5)
+  var.env = as.environment(list(df=df))
+  
+  app$ui = fluidPage(
+    tags$script(HTML(autocomp.js())),
+    aceEditor("edit",mode = "r",autoComplete = "live",debounce = 10)
+  )
+  
+  
+  
+  appInitHandler(function(session,...) {
+    acob = shiny::observe({
+      inputId = "edit"
+      #value = getInputValue(paste0("shinyAce_", inputId, "_hint"))
+      value <- session$input[[paste0("shinyAce_", inputId, "_hint")]]
+      restore.point("ac.observer")
+      cat("\nstart observer", round(runif(1)*100))
+      if(is.null(value)) return(NULL)
+      str = substring(value$linebuffer,1,value$cursorPosition)
+      words = NULL
+      arg.words =  autcomp.function.args(str)
+      var.words = autocomp.vars(str,var.env=var.env)
+      col.words = autocomp.cols(str,var.env=var.env)
+      meta = c(rep("arg",length(arg.words)),rep("var",length(var.words)),rep("col",length(col.words)))
+      score = c(rep(103,length(arg.words)),rep(102,length(var.words)),rep(101,length(col.words)))      
+      words = c(arg.words,var.words,col.words)
+      df = data.frame(name=words,value=words,meta=meta, score=score)
+      set.autocomplete.list(inputId,df=df)
+
+      
+    })
+    
+    #acob$resume()
+  })
+  viewApp(app)
+}
+
+auth.example = function() {
+  app = eventsApp(need.authentication = TRUE)
+  app$ui = fluidPage(
+    actionButton("authBtn","Authenticate me"),
+    actionButton("btn1","Press me only after authentication..."),
+    selectInput("sel","Dont change before authentication",choices = 1:10),
+    selectInput("sel2","Change me whenever you like",choices = 1:10),
+    uiOutput("out")
+  )
+  buttonHandler("authBtn",no.authentication.required = TRUE,function(...,app=getApp()) {
+    app$is.authenticated = TRUE
+    setUI("out","You are authenticated...")
+  })
+  buttonHandler("btn1",function(...,app=getApp()) {
+    setUI("out","Yep the button was pressed...")
+  })
+  changeHandler("sel",function(...){})
+  changeHandler("sel2",no.authentication.required = TRUE,function(...){})
+  viewApp(app)  
+  
+}
+
+image.click.example = function() {
+  library(EconCurves)
+  setwd("D:/libraries/EconCurves/")
+  filename="test.png"
+  res = plot.png.with.coordmap(plot(1:10), width.px = 400, height.px=300, dir=getwd(), filename=filename)
+  library(shinyEvents)
+  app = eventsApp()
+  addResourcePath("fig", getwd())
+  app$ui = fluidPage(
+    p("Image"),
+    tags$img(src = paste0("fig/",filename),id="myimg")
+  )
+  imageClickHandler(id="myimg", function(...) {
+    args = list(...)
+    x = args$x
+    y = args$y
+    restore.point("my.image.handler")
+    cat("\nclicked on image")
+  })
+  viewApp()
+
+}
+
+button.image.click = function() {
+  library(SeminarMatching)
+  setwd("D:/libraries/SeminarMatching/semapps/shared")
+  restore.point.options(display.restore.point = FALSE)
+  app = StudSeminarsApp(init.userid = "test", init.password="test", lang="de")
+  viewApp(app)
+}
+
+setattr.example = function() {
+  app = eventsApp()
+  
+  app$ui = fluidPage(
+    actionButton("btn",label="Hide"),
+    div(id="div1",p("I am a div"))
+  )
+  buttonHandler("btn", function(...) {
+    setHtmlCSS("div1",list(visibility="hidden"))
+  })
+  viewApp(app)
+}
+
+
+setui.example = function() {
+
+  library(shinyEventsUI)
+  app = eventsApp()
+  
+  app$ui = fluidPage(
+    radioBtnGroup(id = "rbg",
+      labels = c("A","B"),
+      show.hide.containers = c("div1","div2")
+    ),
+    div(id="div1","div1 (shown when A)",uiOutput("out1a"),uiOutput("out1b")),
+    hidden_div(id="div2","div2 (shown when B)",actionButton("btn",label="Click"),uiOutput("out2a"),uiOutput("out2b")),
+    div(id="div3","div3 (always shown)",uiOutput("out3"))
+    
+  )
+  buttonHandler("btn", function(...) {
+    txt = as.character(runif(1))
+    setUI("out3",paste0("out 3 ",txt))
+    setUI("out1a",paste0("out 1a ",txt)) # does not work correctly, since out1 is inside a hidden div
+    setUI("out2a",paste0("out 2a ",txt)) # need dsetUI since out is inside a hidden div
+    dsetUI("out2b",paste0("out 2b ",txt)) # need dsetUI since out is inside a hidden div
+    dsetUI("out1b",paste0("out 1b ",txt)) # need dsetUI since out is inside a hidden div
+    cat("\n setUI to ",txt)
+  })
+
+  viewApp(app)
+}
+
+
+
+bottom.script.example = function() {
+  app = eventsApp()
+  app$ui = fluidPage(
+    bottomScript(HTML("alert('Hello World');")),
+    p("I am a paragraph.")
+  )
+  moveBottomScripts(app$ui)
+  viewApp(app)
+
+}
+
+dyn.ui.input.error.example = function() {
+  library(shiny)
+
+  myUI = function() {
+    textInput("mytext",paste0("mytext ", sample.int(10000,1)), value=sample.int(10000,1))
+  }
+  
+  ui = fluidPage(
+    title = 'Dynamic UI Input Error',
+    uiOutput("myUI"),
+    actionButton("myBtn","Click me")
+  )
+  
+  server = function(input, output, session) {
+    output$myUI <- renderUI(myUI())
+    
+    observeEvent(input$myBtn,{
+      text = isolate(input$mytext)
+      cat("Value of text input:", text)
+      output$myUI <- renderUI(myUI())
+    })
+  }
+  runApp(list(ui=ui,server=server),launch.browser=rstudio::viewer) 
+  
+}
+
 
 gotcha.example = function() {
   library(shiny)
@@ -85,7 +356,7 @@ plot.example = function() {
   )
   setUI("myui", plotOutput("myplot"))
   setPlot("myplot",plot(runif(100),runif(100)))
-  runEventsApp(app,launch.browser=rstudio::viewer)
+  viewApp(app)
 
 }
 
@@ -173,7 +444,7 @@ nested.ui.example = function() {
     cat("before setText")
     setText(paste0("Text",level),txt)
     cat("after setText")
-    removeEventHandler("Btn1")
+    removeEventHandler(id="Btn1",eventId="buttonHandlerEvent")
     cat("\n finished press....")
   }
 
@@ -181,7 +452,7 @@ nested.ui.example = function() {
   buttonHandler("Btn1", press, level=1)
   buttonHandler("Btn2", press, level=2)
 
-  runEventsApp(app,ui=main.ui)
+  viewApp(app,ui=main.ui)
 }
 
 
@@ -221,6 +492,36 @@ hotkey.shiny.events.example = function() {
 }
 
 
+change.handler.example = function() {
+  library(shinyEvents)
+
+  app = eventsApp(verbose=FALSE)
+
+  # Main page
+  app$ui = fluidPage(
+    selectizeInput("varInput", "Variable:",
+        c("Cylinders" = "cyl",
+          "Transmission" = "am",
+          "Gears" = "gear")
+    ),
+    radioButtons("rad",label="radio", choices=c("A","B","C")),
+    textOutput("myText")
+  )
+  # handler for change of an input value
+  selectChangeHandler("varInput",function(id, value,...) {
+    cat("change handler called...")
+    args = list(...)
+    restore.point("changeHandler.inner")
+    setText("myText",paste0("You chose the list item ", value,". ", 
+                            "A random number: ", sample(1:1000,1)))
+  })
+
+  viewApp(app)
+}
+
+
+
+
 basic.shinyEvents.example = function() {
   library(shinyEvents)
 
@@ -255,6 +556,7 @@ basic.shinyEvents.example = function() {
 
   # handler for change of an input value
   changeHandler("varInput",on.create=TRUE, function(id, value,...) {
+    
     setText("myText",paste0("You chose the list item ", value,". ", 
                             "A random number: ", sample(1:1000,1)))
   })

@@ -1,7 +1,18 @@
-
-# shinyEvents: build shiny apps with event handlers
+# shinyEvents: Alternative way to build shiny apps based on event handlers
 
 Sebastian Kranz, Ulm University
+
+### NEW Version that is not fully compatible with old apps
+
+Starting from version 2.0 shiny events is considerably rewritten. Instead of just building event handling on top of shiny's reactive framework, in many cases it now directly uses javascript events, circumventing many steps of shiny's reactivity. It still is possible to combine shinyEvents with standard shiny reactivity based programming.
+
+I tried to be backward compatible, but there may be some incompatibilities with the old version, however. The most important requirement of the new version is that you add the command
+```r
+appReadyToRun(app)
+```
+at the end of your global.R file in a shiny app (see below) to get your app approbiatedly configured.
+
+### Key idea
 
 RStudio's shiny is a great framework to generate web applications with R. In a classical shiny app, interactivity is not generated via event handlers but by `reactive programming`. For details, see the shiny documentation and tutorials under [http://shiny.rstudio.com/](http://shiny.rstudio.com/).
 
@@ -248,6 +259,9 @@ changeHandler("mySelect", function(id, value,...) {
 
 # Set an initial text
 setText("myText","This is the start text...")
+
+# Important that you add this line
+appReadyToRun(app)
 ```
 
 Beware:

@@ -6,7 +6,7 @@
 \usage{
 changeHandler(id, fun, ..., app = getApp(), on.create = FALSE,
   if.handler.exists = c("replace", "add", "skip")[1],
-  session = getAppSession(app))
+  session = getAppSession(app), no.authentication.required = FALSE)
 }
 \arguments{
 \item{id}{name of the input element}
