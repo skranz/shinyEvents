@@ -141,7 +141,7 @@ setAppSession = function(session, app=getApp(global=TRUE)) {
   
   if (!app$single.instance) {
     # create a copy of app
-    app = as.environment(as.list(app))
+    app = as.environment(as.list(app, all.names=TRUE))
     app$isSessionEventApp = TRUE
     attr(session,"eventsApp")=app
   }
