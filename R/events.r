@@ -125,49 +125,44 @@ getAppEvent = function(eventId,app=getApp()) {
 
 #' An event handler for an object with given id
 #' @export
-idEventHandler = function(id, fun, event="change", css.locator="", inner.js.code=NULL, shiny.value.code=NULL, eventId=paste0(id,"_id_",event,"_event"),...) {
+idEventHandler = function(id, fun, event="change", css.locator="", inner.js.code=NULL, shiny.value.code=NULL, eventId=paste0(id,"_id_",event,"_event"),stop.propagation = FALSE,...) {
   restore.point("idEventHandler")
   if (nchar(css.locator)>0) {
     css.locator=paste0(css.locator," #",id)
   } else {
     css.locator=paste0("#",id)
   }
-  customEventHandler(eventId=eventId,fun=fun, css.locator=css.locator, event=event, inner.js.code=inner.js.code, shiny.value.code=shiny.value.code, id=NULL,...)
+  customEventHandler(eventId=eventId,fun=fun, css.locator=css.locator, event=event, inner.js.code=inner.js.code, shiny.value.code=shiny.value.code, id=NULL,stop.propagation = stop.propagation,...)
 }
 
 #' An event handler for objects with given class
 #' @export
-classEventHandler = function(class, fun, event="change", css.locator="", inner.js.code=NULL, shiny.value.code=NULL, eventId=paste0(class,"_class_",event,"_event"), class.prefix=".",...) {
+classEventHandler = function(class, fun, event="change", css.locator="", inner.js.code=NULL, shiny.value.code=NULL, eventId=paste0(class,"_class_",event,"_event"), class.prefix=".",stop.propagation=FALSE,...) {
   restore.point("classEventHandler")
   if (nchar(css.locator)>0) {
     css.locator=paste0(css.locator," ",class.prefix,class)
   } else {
     css.locator=paste0(class.prefix,class)
   }
-  customEventHandler(eventId=eventId, fun=fun,css.locator=css.locator, event=event, inner.js.code=inner.js.code, shiny.value.code=shiny.value.code, id=NULL,...)
+  customEventHandler(eventId=eventId, fun=fun,css.locator=css.locator, event=event, inner.js.code=inner.js.code, shiny.value.code=shiny.value.code, id=NULL, stop.propagation = stop.propagation,...)
 }
 
 #' A custom event handler. Need to write correct css.locator
 #' @export
-customEventHandler = function(eventId, fun, css.locator, event="change", inner.js.code=NULL, shiny.value.code=NULL, id=NULL,...) {
+customEventHandler = function(eventId, fun, css.locator, event="change", inner.js.code=NULL, shiny.value.code=NULL, id=NULL,stop.propagation=FALSE,...) {
   restore.point("customEventHandler")
 
   if (is.null(inner.js.code)) {
     inner.js.code = 'var value = $(this).val();'
   }
   if (is.null(shiny.value.code)) {
-    shiny.value.code = paste0('{eventId:"',eventId,'",id: this.id, value: $(this).val()}')
+    shiny.value.code = paste0('{eventId:"',eventId,'",id: this.id, value: $(this).val(),  data: $(this).data(),nonce: Math.random()}')
   }
+  sp = if (stop.propagation) "\ne.stopPropagation();" else ""
 
   jscript = paste0('
-$("',css.locator,'").', event,'(function() {
-  ',inner.js.code,'
-  Shiny.onInputChange("',eventId,'", ', shiny.value.code,');
-});
-')
-  jscript = paste0('
 $("body").on("',event,'", "',css.locator,'",function(e) {
-  ',inner.js.code,'
+  ',inner.js.code,sp,'
   Shiny.onInputChange("',eventId,'", ', shiny.value.code,');
 });
 ')
@@ -181,18 +176,16 @@ $("body").on("',event,'", "',css.locator,'",function(e) {
 svgClickHandler = function(id, fun, ..., eventId=if(stop.propagation) "svgClickEvent" else "svgClickEventWithPropagation", class="clickable_svg", app=getApp(),no.authentication.required=FALSE, stop.propagation=TRUE) {
   restore.point("svgClickHandler")
   
-  sp = if (stop.propagation) "e.stopPropagation();" else ""
   inner.js = paste0('
       var offset = $(this).offset();
       //alert("svg click: offset= "+JSON.stringify(offset));
       var x = (e.pageX - offset.left);
       var y = (e.pageY - offset.top);
-      ',sp,'
       //alert("x="+x+" y="+y);
   ')
   shiny.value.code = paste0('{eventId: "',eventId,'", id: e.currentTarget.id, x: x, y: y, nonce: Math.random(), pageX: e.pageX, pageY: e.pageY}')
   
-  customEventHandler(eventId = eventId,css.locator = paste0(".",class),event = "click",id = id,inner.js.code = inner.js, shiny.value.code = shiny.value.code, fun=fun,...)
+  customEventHandler(eventId = eventId,css.locator = paste0(".",class),event = "click",id = id,inner.js.code = inner.js, shiny.value.code = shiny.value.code, fun=fun,stop.propagation = stop.propagation,...)
 }
 
 
