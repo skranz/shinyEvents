@@ -149,14 +149,16 @@ classEventHandler = function(class, fun, event="change", css.locator="", inner.j
 
 #' A custom event handler. Need to write correct css.locator
 #' @export
-customEventHandler = function(eventId, fun, css.locator, event="change", inner.js.code=NULL, shiny.value.code=NULL, id=NULL,stop.propagation=FALSE,...) {
+customEventHandler = function(eventId, fun, css.locator, event="change", inner.js.code=NULL, shiny.value.code=NULL, extra.shiny.value.code="", id=NULL,stop.propagation=FALSE,...) {
   restore.point("customEventHandler")
 
   if (is.null(inner.js.code)) {
     inner.js.code = 'var value = $(this).val();'
   }
   if (is.null(shiny.value.code)) {
-    shiny.value.code = paste0('{eventId:"',eventId,'",id: this.id, value: $(this).val(),  data: $(this).data(),nonce: Math.random()}')
+    if (nchar(extra.shiny.value.code)>0) extra.shiny.value.code = paste0(", ", extra.shiny.value.code)
+    
+    shiny.value.code = paste0('{eventId:"',eventId,'",id: this.id, value: $(this).val(),  data: $(this).data(),nonce: Math.random()',extra.shiny.value.code,'}')
   }
   sp = if (stop.propagation) "\ne.stopPropagation();" else ""
 
