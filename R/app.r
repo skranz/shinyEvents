@@ -229,8 +229,8 @@ setHtmlShow = function(id=NULL, class=NULL, display="block",visibility="visible"
 #' Evaluate arbitrary java script code in the client's web browser
 #' @value js the java script code to be evaluated
 #' @export 
-evalJS = function(js, app=getApp()) {
-  app$session$sendCustomMessage(type= 'shinyEvalJS', message=list(code=js))
+evalJS = function(js,...,.args=list(...), app=getApp()) {
+  app$session$sendCustomMessage(type= 'shinyEvalJS', message=c(list(code=js),.args))
 }
 
 #' Append HTML code to a DOM element
