@@ -238,6 +238,14 @@ buttonHandlerJS = function(eventId="buttonHandlerEvent", imageEventId="imageClic
     if (typeof sel === "undefined") return(null);
     $(sel).each(function( index ) {
       var valId = $(this).attr("id");
+      var x = $(this);
+      if (x.hasClass("ace_editor")) {
+        var editor = x.data("ace");
+        var value = editor.getValue();
+        vals[valId] = value;
+        return;
+      }
+
       vals[valId] = $(this).val();
     });
 
