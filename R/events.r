@@ -232,25 +232,6 @@ buttonHandlerJS = function(eventId="buttonHandlerEvent", imageEventId="imageClic
   }
   
   res = tags$script(HTML(paste0('
-  shinyEventsExtractFormValues = function(id) {
-    var sel = $("#"+id).data("form-selector");
-    var vals = {};
-    if (typeof sel === "undefined") return(null);
-    $(sel).each(function( index ) {
-      var valId = $(this).attr("id");
-      var x = $(this);
-      if (x.hasClass("ace_editor")) {
-        var editor = x.data("ace");
-        var value = editor.getValue();
-        vals[valId] = value;
-        return;
-      }
-
-      vals[valId] = $(this).val();
-    });
-
-    return vals;
-  } 
 
   $(document).on("click", function (e) {
     var tag = e.target.nodeName;

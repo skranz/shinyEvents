@@ -269,22 +269,8 @@ callJS = function(.fun,..., .args=NULL, .app=getApp()) {
 appReadyToRun = function(app=getApp(), ui=app$ui) {
   restore.point("appReadyToRun")
   
-  # Shiny.addCustomMessageHandler("shinyEventsCallJS", function(message) {
-  #   var nargs = message.args.length
-  #   if (nargs == 0) {
-  #     eval(message.fun+"();");
-  #   } else if (nargs == 1) {
-  #     eval(message.fun+"(message.args[0]);");
-  #   } else {
-  #     var sargs = "message.args[0]";
-  #     for (i = 1; i<nargs; i++) {
-  #       sargs += ", message.args["+i+"]";
-  #     }
-  #     eval(message.fun+"("+sargs+");");
-  #   }
-  # });
-  
   if (isTRUE(app$.adapt.ui)) {
+    addShinyEventsRessourcePath()
     # js code for dsetUI
     js = '
   Shiny.addCustomMessageHandler("shinyEvalJS", function(message) {
@@ -317,6 +303,7 @@ appReadyToRun = function(app=getApp(), ui=app$ui) {
         event$jscript
       })
       ui = tagList(
+        singleton(tags$head(tags$script(src="shinyEvents/shinyEvents.js"))),
         ui,
         script.tags,
         tags$script(HTML(js))
@@ -332,6 +319,16 @@ appReadyToRun = function(app=getApp(), ui=app$ui) {
   app$ui = ui
   app$is.running = TRUE
 }
+
+addShinyEventsRessourcePath = function() {
+  www.dir = system.file('www', package='shinyEvents')
+  # init ressource paths
+  shiny::addResourcePath(
+    prefix = 'shinyEvents',
+    directoryPath = www.dir
+  )
+}
+
 
 #' run shiny events app
 runEventsApp = function(app=getApp(),ui=NULL,...) {
