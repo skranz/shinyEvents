@@ -309,3 +309,25 @@ documentClickHandlerJS = function(eventId="documentClickHandlerEvent") {
 ids2sel= function(ids) {
   sc("#",ids, collapse=", ")
 }
+
+#' Can be called inside initApp handler
+#' fun is a function that gets an argument
+#' query and can do some initial dispatch
+#' depending on the query.
+#' For some reason we need to use the
+#' observer trick to get access to the
+#' query object. This means dispatch
+#' takes place after other commands in the
+#' initApp handler.
+initialQueryDispatch = function(fun,app=getApp(),...) {
+	 app$.initQueryDispatchObserver = observe(priority = -100,x = {
+		app = getApp()
+	 	if (isTRUE(app$.initQueryDispatchHasRun)) {
+		  app$.initQueryDispatchObserver$destroy()
+		  return()
+		}
+		app$.initQueryDispatchHasRun = TRUE
+		query <- parseQueryString(app$session$clientData$url_search)
+		fun(query=query,app=app,...)
+	})
+}
