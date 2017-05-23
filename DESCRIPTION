@@ -1,8 +1,8 @@
 Package: shinyEvents
 Type: Package
 Title: Shiny wrapper with event handlers instead of reactivity
-Version: 2.1
-Date: 2016-12-4
+Version: 2.2
+Date: 2017-05-23
 Author: Sebastian Kranz
 Maintainer: Sebastian Kranz <sebastian.kranz@uni-ulm.de>
 Description: Shiny is a great package. Yet, for more complex
