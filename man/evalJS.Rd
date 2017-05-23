@@ -4,7 +4,7 @@
 \alias{evalJS}
 \title{Evaluate arbitrary java script code in the client's web browser}
 \usage{
-evalJS(js, app = getApp())
+evalJS(js, ..., .args = list(...), app = getApp())
 }
 \description{
 Evaluate arbitrary java script code in the client's web browser

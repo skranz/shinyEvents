@@ -6,7 +6,7 @@
 \usage{
 idEventHandler(id, fun, event = "change", css.locator = "",
   inner.js.code = NULL, shiny.value.code = NULL, eventId = paste0(id,
-  "_id_", event, "_event"), ...)
+  "_id_", event, "_event"), stop.propagation = FALSE, ...)
 }
 \description{
 An event handler for an object with given id

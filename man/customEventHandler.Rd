@@ -5,7 +5,8 @@
 \title{A custom event handler. Need to write correct css.locator}
 \usage{
 customEventHandler(eventId, fun, css.locator, event = "change",
-  inner.js.code = NULL, shiny.value.code = NULL, id = NULL, ...)
+  inner.js.code = NULL, shiny.value.code = NULL,
+  extra.shiny.value.code = "", id = NULL, stop.propagation = FALSE, ...)
 }
 \description{
 A custom event handler. Need to write correct css.locator

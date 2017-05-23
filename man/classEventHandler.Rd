@@ -6,7 +6,8 @@
 \usage{
 classEventHandler(class, fun, event = "change", css.locator = "",
   inner.js.code = NULL, shiny.value.code = NULL, eventId = paste0(class,
-  "_class_", event, "_event"), class.prefix = ".", ...)
+  "_class_", event, "_event"), class.prefix = ".", stop.propagation = FALSE,
+  ...)
 }
 \description{
 An event handler for objects with given class
