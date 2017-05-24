@@ -15,5 +15,5 @@ Description: Shiny is a great package. Yet, for more complex
     - no explicit server function
 License: GPL >= 2.0
 Depends:
-    shiny
+    shiny, restorepoint
 RoxygenNote: 5.0.0

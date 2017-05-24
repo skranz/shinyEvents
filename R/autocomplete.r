@@ -24,7 +24,6 @@ fun.arg.names = function(fun, envir=globalenv()) {
 
 autocomp.find.current.function = function(str,vec = strsplit(str,"",fixed = TRUE)[[1]]
 ) {
-  library(stringtools)
   open = which(vec=="(")
   if (length(open)==0) return(NULL)
   closed = which(vec==")")
