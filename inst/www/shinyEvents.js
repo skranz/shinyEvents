@@ -31,6 +31,8 @@ shinyEventsWidgetValue = function(x) {
       values.push($(this).val());
     });
     return values;
+  } else if (x.attr('type')==="checkbox") {
+    return(x.prop("checked"));
   }
   return x.val();
 };
