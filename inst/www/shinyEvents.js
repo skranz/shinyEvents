@@ -33,6 +33,8 @@ shinyEventsWidgetValue = function(x) {
     return values;
   } else if (x.attr('type')==="checkbox") {
     return(x.prop("checked"));
+  } else if (x.hasClass("shiny-date-input")) {
+    return($("#"+id+" input").val());
   }
   return x.val();
 };
