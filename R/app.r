@@ -287,3 +287,14 @@ getAppSession = function(app=NULL) {
 getInputValue = function(id, session=getAppSession(app),app=getApp()) {
   isolate(session$input[[id]])
 }
+
+#' Set values for shiny or html inputs or other widgets
+#' 
+#' We may have to adapt the function shinyEventSetValue
+#' to include new, not yet supported widget types
+#' @param values a named list. The names are the 
+#'        id of the html widget. The values are the
+#'        values.
+setWidgetValues = function(values) {
+  callJS("shinyEventsSetValues", values)
+}

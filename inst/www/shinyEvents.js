@@ -38,3 +38,29 @@ shinyEventsWidgetValue = function(x) {
   }
   return x.val();
 };
+
+shinyEventsSetValues = function(vals) {
+  $.each(vals, function(k, v) {
+    shinyEventsSetValue($("#"+k),v);   
+  });
+};
+
+// Tries to sett the value of different shiny widgets
+// x is a jquery object e.g. $("#myInput")
+shinyEventsSetValue = function(x, value) {
+  var id = x.attr("id");
+  var el = x.get(0);
+  if (x.hasClass("shiny-input-radiogroup")) {
+    $('input:radio[name="' + $escape(id) + '"][value="' + $escape(value) + '"]').prop('checked', true);    
+  } else if (x.hasClass("ace_editor")) {
+    var editor = x.data("ace");
+    return editor.setValue(value);
+  } else if (x.hasClass("shiny-input-checkboxgroup")) {
+    checkboxGroupInputBinding.setValue(el, value);
+  } else if (x.attr('type')==="checkbox") {
+    el.checked = value;
+  } else if (x.hasClass("shiny-date-input")) {
+    dateInputBinding.setValue(el, value);
+  }
+  x.val(value);
+};
