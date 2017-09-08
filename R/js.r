@@ -84,11 +84,20 @@ evalJS = function(js,...,.args=list(...), app=getApp()) {
 #' @value html the html code as string
 #' @value selector a css selector as string
 #' @export 
+setInnerHTML = function(id=NULL, html, class=NULL,selector=paste0(c(sc("#",id),sc(".",class)),collapse=", "), app=getApp()) {
+  app$session$sendCustomMessage(type= 'shinyEventsSetInnerHTML', message=list(selector=selector,html=html))  
+}
+
+
+#' Append HTML code to a DOM element
+#' @value html the html code as string
+#' @value selector a css selector as string
+#' @export 
 appendToHTML = function(html, selector="body", app=getApp()) {
   app$session$sendCustomMessage(type= 'shinyEventsAppend', message=list(selector=selector,html=html))  
 }
 
-#' Prpend HTML code to a DOM element
+#' Prepend HTML code to a DOM element
 #' @value html the html code as string
 #' @value selector a css selector as string
 #' @export 
