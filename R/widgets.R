@@ -37,10 +37,10 @@ examples.widgets = function() {
     restore.point("jnsifnjsfn")
     cat(formValues$myRadio, formValues$myCheck)
   })
-  changeHandler("myCheck", function(id,value,...) {
+  checkboxChangeHandler("myCheck", function(id,value,checked,...) {
     args = list(...)
     restore.point("jnsifnjs3efrffn")
-    cat("Checkbox", id," changed to ", value)    
+    cat("Checkbox", id," changed to ", checked)    
   })
   viewApp(app)
 }
@@ -111,3 +111,39 @@ simpleCheckbox = function(id,label="",value=id, checked=FALSE,name=id,as.tag=TRU
   if (!as.tag) return(html)
   return(HTML(html))
 }
+
+#' Add one or several checkboxes that will be called if the box is checked or unchecked
+#'
+#' @param id name of the input element 
+#' @param fun function that will be called if the input value changes. The function will be called with the arguments: 'id', 'value' and 'session'. One can assign the same handler functions to several input elements.
+#' @param class alternative to id a class selector
+#' @param selector a fully specified css selector.
+#' @param stop.propagation if TRUE the event will not propagate
+#' @param ... extra arguments that will be passed to fun when the event is triggered.
+#' @export
+checkboxChangeHandler = function(id=NULL, fun, ...,class=NULL, selector=paste0(c(sc("#", id),
+  sc(".", class)), collapse = ", "), eventId=makeEventsId("checkBoxChange",id=id, class=class), stop.propagation=FALSE, event="change",  app=getApp()) {
+  restore.point("checkboxChangeHandler")
+  
+  shiny.value.code = paste0('{eventId:"',eventId,'",id: this.id, value: $(this).val(), checked: this.checked,  data: $(this).data(),nonce: Math.random()}')
+  customEventHandler(eventId=eventId,css.locator = selector,fun=fun,..., event=event,shiny.value.code = shiny.value.code,stop.propagation = stop.propagation, app=app)
+}
+
+makeEventsId = function(prefix, id=NULL, class=NULL) {
+  if (!sum(length(id)+length(class))==1) {
+    return(paste0(prefix,"-",random.string(1,12)))
+  } else if (length(id)==1) {
+    return(paste0(prefix,"-",id))
+  } else {
+    return(paste0(prefix,"-",class))
+  }
+}
+
+random.string = function(n=1, nchar=12) {
+  if (n == 1) {
+    paste0(sample(c(LETTERS,letters,0:9), nchar, TRUE), collapse="")
+  } else {
+    unlist(replicate(n,paste0(sample(c(LETTERS,letters,0:9), nchar, TRUE),collapse="")))
+  }
+}
+
