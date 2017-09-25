@@ -18,7 +18,7 @@ getDefaultAppEvents = function() {
 }
 
 setAppHasBottomScript = function(has.bottom.script=FALSE, app=getApp()) {
-  app$glob$..HAS.BOTTOM.SCRIPT = has.bottom.script 
+  app$glob$..HAS.BOTTOM.SCRIPT = has.bottom.script
 }
 
 #' If app is not running, mark script to be added at the bottom and return NULL
@@ -33,7 +33,7 @@ bottomScript = function(..., app=getApp()) {
 #' If app is not running, mark script to be added at the bottom and return NULL
 #' If app is already running return script directly
 singletonBottomScript = function(..., app=getApp()) {
-  tag=singleton(tags$script(...)) 
+  tag=singleton(tags$script(...))
   attr(tag,"isBottomScript") <- TRUE
   if (!isTRUE(app$is.running)) app$glob$..HAS.BOTTOM.SCRIPT = TRUE
   tag
@@ -44,7 +44,7 @@ singletonBottomScript = function(..., app=getApp()) {
 #' and return them separate from the body.
 moveBottomScripts <- function(ui, reset.app=FALSE) {
   restore.point("moveBottomScripts")
-  
+
   bottomItems <- list()
   result <- htmltools:::rewriteTags(ui, function(uiObj) {
     if (htmltools:::isTag(uiObj) && isTRUE(attr(uiObj,"isBottomScript"))) {
@@ -65,10 +65,10 @@ moveBottomScripts <- function(ui, reset.app=FALSE) {
 eventsApp = function(set.as.default=TRUE, verbose=TRUE, single.instance=FALSE, add.events = getDefaultAppEvents(), no.events=FALSE, need.authentication=FALSE, adapt.ui = TRUE) {
   app = new.env()
   glob = new.env(parent=globalenv())
-  
+
   app$glob = glob
 
-  app$.adapt.ui = adapt.ui 
+  app$.adapt.ui = adapt.ui
   app$need.authentication = need.authentication
   app$events.without.authentication = NULL
   app$is.authenticated = FALSE
@@ -84,10 +84,10 @@ eventsApp = function(set.as.default=TRUE, verbose=TRUE, single.instance=FALSE, a
   app$output = list()
   app$trigger.list = list()
   app$collect.triggers = TRUE
-  
+
   app$initHandler = function(...) {}
-  
-  app$server = function(session, input, output) {  
+
+  app$server = function(session, input, output) {
     app = getApp()
     app$is.running = TRUE
     app$in.init = TRUE
@@ -102,12 +102,12 @@ eventsApp = function(set.as.default=TRUE, verbose=TRUE, single.instance=FALSE, a
   }
   if (set.as.default)
     setApp(app)
-  
+
   # register default events
   for (eventId in names(add.events)) {
     registerEvent(eventId=eventId,jscript=add.events[[eventId]]$jscript,app=app)
   }
-  
+
   app
 }
 
@@ -118,7 +118,7 @@ setApp = function(app) {
 
 
 #' get the current app object
-#' 
+#'
 #' If the app is already running, gets by default the local app copy
 #' corresponding to the current session
 getApp = function(session=NULL) {
@@ -130,7 +130,7 @@ getApp = function(session=NULL) {
   }
   if (is.null(session))
     return(.SHINY.EVENTS.ENV$app)
-  
+
   app = attr(session,"eventsApp")
   if (!is.null(app)) return(app)
   gapp
@@ -138,20 +138,20 @@ getApp = function(session=NULL) {
 
 setAppSession = function(session, app=getApp(global=TRUE)) {
   #restore.point("setAppSession")
-  
+
   if (!app$single.instance) {
     # create a copy of app
     app = as.environment(as.list(app, all.names=TRUE))
     app$isSessionEventApp = TRUE
     attr(session,"eventsApp")=app
   }
-  
+
   app$session = session
   app$input = session$input
 
   #browser()
-  
-  
+
+
   # Copy initially defined output renderers
   # into session$output object
   if (is.null(app[["initial.output"]]))
@@ -160,13 +160,13 @@ setAppSession = function(session, app=getApp(global=TRUE)) {
   for (id in names(app$initial.output)) {
     try(app$output[[id]] <- app$initial.output[[id]])
   }
-    
+
   session.env = new.env()
   session.env$session = session
   session.env$input = session$input
   session.env$output = session$output
-  
-  app$session.env = session.env 
+
+  app$session.env = session.env
   app
 }
 
@@ -180,7 +180,31 @@ setAppUI = function(ui, app=getApp()) {
 }
 
 #' view shiny events app in RStudio viewer
-viewApp = function(app=getApp(),ui=NULL,launch.browser=rstudio::viewer,...) {
+viewApp = function(app=getApp(),ui=NULL,launch.browser=NULL,url.args=NULL, ...) {
+  if (!is.null(url.args)) {
+    #restore.point("ndfdbfhm")
+    url.arg.str = paste0("?", paste0(names(url.args),"=", url.args, collapse="&"))
+    use.rstudio.viewer = is.null(launch.browser) | isTRUE(try(launch.browser == rstudioapi::viewer(),silent = TRUE))
+
+    if (use.rstudio.viewer) {
+      launch.browser = function(url,...) {
+        url = paste0(url, url.arg.str)
+        rstudioapi::viewer(url, ...)
+      }
+    } else {
+      launch.browser = function(url,...) {
+        url = paste0(url, url.arg.str)
+        browseURL(url, ...)
+      }
+    }
+  } else if (is.null(launch.browser)) {
+    if (require(rstudioapi)) {
+      launch.browser = rstudioapi::viewer
+    } else {
+      launch.browser = TRUE
+    }
+  }
+
   runEventsApp(app,ui, launch.browser=launch.browser,...)
 }
 
@@ -191,57 +215,35 @@ sc = function(..., collapse=NULL, sep="") {
   paste0(..., collapse=collapse, sep=sep)
 }
 
+addEventsAppExtraTags = function(..., app=getApp()) {
+  app$..EventsAppExtraTags = c(app$.EventsAppExtraTags, list(...))
+}
+
+
 #' set the app ready to run
 appReadyToRun = function(app=getApp(), ui=app$ui) {
   restore.point("appReadyToRun")
-  
+
   if (isTRUE(app$.adapt.ui)) {
     addShinyEventsRessourcePath()
-    # js code for dsetUI
-    js = '
-  Shiny.addCustomMessageHandler("shinyEvalJS", function(message) {
-    eval(message.code);
-  });
-
-  Shiny.addCustomMessageHandler("shinyEventsAppend", function(message) {
-    $(message.selector).append(message.html);
-  });
-  Shiny.addCustomMessageHandler("shinyEventsPrepend", function(message) {
-    $(message.selector).prepend(message.html);
-  });
-  
-  Shiny.addCustomMessageHandler("shinyEventsSetInnerHTML", function(message) {
-    //alert("selector: "+ message.selector + " html: "+ message.html);
-    $(message.selector).html(message.html);
-  });
-  
-  Shiny.addCustomMessageHandler("shinyEventsSetAttribute",function(message) {
-      $(message.selector).attr(message.attr);
-  });
-  Shiny.addCustomMessageHandler("shinyEventsSetCSS", function(message) {
-      $(message.selector).css(message.attr);
-  });
-  '
-  
-    
     if (!app$no.events) {
       script.tags = lapply(app$eventList, function(event) {
         event$jscript
       })
       ui = tagList(
         singleton(tags$head(tags$script(src="shinyEvents/shinyEvents.js"))),
+        app$..EventsAppExtraTags,
         ui,
         script.tags,
-        tags$script(HTML(js))
+        tags$script(src="shinyEvents/shinyEventsInit.js")
       )
     }
-    
-    
+
     if (isTRUE(app$glob$..HAS.BOTTOM.SCRIPT))
       ui = moveBottomScripts(ui)
-    
+
   }
-  
+
   app$ui = ui
   app$is.running = TRUE
 }
@@ -257,7 +259,7 @@ addShinyEventsRessourcePath = function() {
 
 
 #' run shiny events app
-runEventsApp = function(app=getApp(),ui=NULL,...) {
+runEventsApp = function(app=getApp(),ui=NULL, ...) {
   #add.ui.renderer(app=app)
   if (!is.null(ui))
     setAppUI(ui=ui, app=app)
@@ -268,7 +270,7 @@ runEventsApp = function(app=getApp(),ui=NULL,...) {
 }
 
 display = function(...) {
-  cat(...)  
+  cat(...)
 }
 
 #' Get the current session object
@@ -289,10 +291,10 @@ getInputValue = function(id, session=getAppSession(app),app=getApp()) {
 }
 
 #' Set values for shiny or html inputs or other widgets
-#' 
+#'
 #' We may have to adapt the function shinyEventSetValue
 #' to include new, not yet supported widget types
-#' @param values a named list. The names are the 
+#' @param values a named list. The names are the
 #'        id of the html widget. The values are the
 #'        values.
 setWidgetValues = function(values) {

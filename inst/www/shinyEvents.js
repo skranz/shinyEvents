@@ -64,3 +64,4 @@ shinyEventsSetValue = function(x, value) {
   }
   x.val(value);
 };
+

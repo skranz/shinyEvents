@@ -68,7 +68,8 @@ js.event.triggered = function(eventId,value,..., app=getApp()) {
   id = value$id
   test.event.authentication(id=id, eventId=eventId, app=app)
   #cat("\njs event triggered eventId = ",eventId," target id = ",id)
-  h = event$handlers[[id]]
+  
+  h = if (!is.null(id)) event$handlers[[id]]
   if (is.null(h)) {
     h = event$glob.handler
   }
