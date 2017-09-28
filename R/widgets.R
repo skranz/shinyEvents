@@ -78,7 +78,7 @@ simpleButton = function(id, label,class.add="",class="btn btn-default action-but
 
 
 
-slimCollapsePanel = function (title, ..., value = title, bsStyle = NULL, heading.style=paste0("padding-top: ", padding,"; padding-bottom: ",padding,";"), open=FALSE, padding="3px")
+slimCollapsePanel = function (title, ..., value = title, bsStyle = NULL, heading.style=if (!is.null(padding)) paste0("padding-top: ", padding,"; padding-bottom: ",padding,";"), extra.class="", open=FALSE, padding=NULL)
 {
     content <- list(...)
     id <- paste0("cpanel", sprintf("%07i", as.integer(stats::runif(1,
@@ -89,7 +89,7 @@ slimCollapsePanel = function (title, ..., value = title, bsStyle = NULL, heading
     if (is.null(bsStyle)) {
         bsStyle = "default"
     }
-    bsTag <- shiny::tags$div(class = paste0("panel panel-", bsStyle),
+    bsTag <- shiny::tags$div(class = paste0("slim-collapse-panel panel panel-", bsStyle," ", extra.class),
         value = value, shiny::tags$div(class = "panel-heading", style=heading.style,role = "tab", id = paste0("heading_", id), shiny::tags$h4(class = "panel-title",
                 shiny::tags$a(`data-toggle` = "collapse", href = paste0("#",
                   id), title))), shiny::tags$div(id = id, class = paste0("panel-collapse collapse ", if(open) "in" else ""),

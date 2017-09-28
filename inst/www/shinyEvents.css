@@ -1,0 +1,8 @@
+.slim-collapse-panel {
+  margin-top: 3px;
+}
+
+.slim-collapse-panel .panel-heading {
+  padding-top: 3px;
+  padding-bottom: 3px;
+}

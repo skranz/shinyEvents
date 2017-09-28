@@ -232,6 +232,7 @@ appReadyToRun = function(app=getApp(), ui=app$ui) {
       })
       ui = tagList(
         singleton(tags$head(tags$script(src="shinyEvents/shinyEvents.js"))),
+        singleton(tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "shinyEvents/shinyEvents.css"))),
         app$..EventsAppExtraTags,
         ui,
         script.tags,
