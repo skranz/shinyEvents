@@ -11,6 +11,17 @@ shinyEventsExtractFormValues = function(id) {
   return vals;
 };
 
+shinyEventsWidgetsValues = function(widgets) {
+  var vals = {};
+  if (typeof widgets === "undefined") return(null);
+  $(widgets).each(function( index ) {
+    var valId = $(this).attr("id");
+    var value = shinyEventsWidgetValue($(this));
+    vals[valId] = value;
+  });
+  return vals;
+};
+
 // Tries to extract the value of different shiny widgets
 // x is a jquery object e.g. $("#myInput")
 // for normal inputs we just return x.val()

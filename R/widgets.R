@@ -10,7 +10,7 @@ examples.form.widgets = function() {
 
     myText = textInput("myText","Text:","Hello World"),
     radioButtons("myRadio",label="Make your choice",choices = list("Choice A"="A","Choice B"= "B"), selected=NA),
-
+    smallButton("btn",label="", icon=icon("trash-o")),
     smallButton("btn","Click me", form.ids=c("check", "myRadio","myText"))
   )
   buttonHandler("btn", function(formValues,...) {
@@ -45,30 +45,30 @@ examples.widgets = function() {
   viewApp(app)
 }
 
-smallButton = function(id, label,class.add="",class="btn btn-default action-button btn-xs",style="",form.ids=NULL,form.sel=NULL,...) {
+smallButton = function(id, label,class.add="",class="btn btn-default action-button btn-xs",style="",icon=NULL, form.ids=NULL,form.sel=NULL,...) {
   args = list(...)
   if ("data-form-selector" %in% names(args) | (is.null(form.ids) & is.null(form.sel))) {
-    tags$button(id=id, style=style, type="button", class=paste(class,class.add),...,label)
+    tags$button(id=id, style=style, type="button", class=paste(class,class.add),...,list(icon, label))
   } else {
     if (is.null(form.sel)) {
       form.sel = paste0("#", form.ids,collapse=", ")
     }
-    tags$button(id=id, style=style, type="button", class=paste(class,class.add),`data-form-selector`=form.sel,...,label)
+    tags$button(id=id, style=style, type="button", class=paste(class,class.add),`data-form-selector`=form.sel,...,list(icon, label))
 
   }
 }
 
-simpleButton = function(id, label,class.add="",class="btn btn-default action-button",style="",form.ids=NULL,form.sel=NULL,as.tag=TRUE,...) {
+simpleButton = function(id, label,class.add="",class="btn btn-default action-button",style="",icon=NULL, form.ids=NULL,form.sel=NULL,as.tag=TRUE,...) {
   args = list(...)
   class=paste(class,class.add)
   if (as.tag) {
     if ("data-form-selector" %in% names(args) | (is.null(form.ids) & is.null(form.sel))) {
-      tags$button(id=id, style=style, type="button", class=class,...,label)
+      tags$button(id=id, style=style, type="button", class=class,...,list(icon, label))
     } else {
       if (is.null(form.sel)) {
         form.sel = paste0("#", form.ids,collapse=", ")
       }
-      tags$button(id=id, style=style, type="button",class=class ,`data-form-selector`=form.sel,...,label)
+      tags$button(id=id, style=style, type="button",class=class ,`data-form-selector`=form.sel,...,list(icon, label))
   
     }
   } else {
@@ -141,9 +141,9 @@ makeEventsId = function(prefix, id=NULL, class=NULL) {
 
 random.string = function(n=1, nchar=12) {
   if (n == 1) {
-    paste0(sample(c(LETTERS,letters,0:9), nchar, TRUE), collapse="")
+    paste0(sample(c(LETTERS,letters), nchar, TRUE), collapse="")
   } else {
-    unlist(replicate(n,paste0(sample(c(LETTERS,letters,0:9), nchar, TRUE),collapse="")))
+    unlist(replicate(n,paste0(sample(c(LETTERS,letters), nchar, TRUE),collapse="")))
   }
 }
 
