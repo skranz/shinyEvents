@@ -52,16 +52,14 @@ app = eventsApp()
 app$ui = fluidPage(
   actionButton("plotBtn", "plot"),
   selectInput("mySelect", "Select:",
-      c("Cylinders" = "cyl",
-        "Transmission" = "am",
-        "Gears" = "gear")
+    c("Cylinders" = "cyl","Transmission" = "am","Gears" = "gear")
   ),
   textOutput("myText"),
   plotOutput("myPlot")
 )
 
 # Handler for the plot button
-buttonHandler("plotBtn", function(session, id,...) {
+buttonHandler("plotBtn", function(id,...) {
   restore.point("plotBtnClick")
   setText("myText", paste0("You pressed the button ",id," at ", Sys.time()))
   setPlot("myPlot", plot(runif(10), runif(10)))    
@@ -94,13 +92,11 @@ library(shinyEvents)
 
 # Create a new eventsApp
 app = eventsApp()
- # create a namespace for ui widgets
-ns = NS("test-app")
 
 app$ui = fluidPage(
   textInput("input_name","Your Name"),
   textInput("input_email", "Your Email"),
-  simpleButton("btn","Submit", form.ids = c("input_name","input_email"),),
+  simpleButton("btn","Submit", form.ids = c("input_name","input_email")),
   textInput("output_name","Saved Name"),
   textInput("output_email","Saved Email")
 )
@@ -147,7 +143,7 @@ buttonHandler("btn1", function(...) {
   
   rows = paste0(collapse = "\n",
     "<tr><td>",num1," + ", num2 ," = </td>",
-    "<td><input class='ans-input' id='ans-",1:5,"',></input></td></tr>"
+    "<td><input class='ans-input' id='ans-",1:5,"' data-row='",1:5,"',></input></td></tr>"
   )
   tab = paste0("<table>",rows,"</table>")
   ui = tagList(
@@ -171,11 +167,10 @@ buttonHandler("btn1", function(...) {
   setUI("exUI", ui)
 })
 
-
 viewApp(app)
 ```
 
-When we press `btn1`, we generate some custom HTML table from pure HTML code, not using any specific shiny widget. The dynamically generated simpleButton `btn2` uses the argument `form.sel=".ans-input"`. This is a <a href="https://www.w3schools.com/cssref/css_selectors.asp">CSS selector</a> and specifies that the values of all inputs with class `ans-input` shall be passed in the variable `formValues` to the buttonHandler of `btn2`.
+When we press `btn1`, we generate some custom HTML table from pure HTML code, not using any specific shiny widget. The dynamically generated simpleButton `btn2` uses the argument `form.sel=".ans-input"`. This is a <a href="https://www.w3schools.com/cssref/css_selectors.asp">CSS selector</a> and specifies that the values of all inputs with class `ans-input` shall be passed in the variable `formValues` to the button handler of `btn2`.
 
 Note that the button handler for `btn1` is defined before the app runs, while the button handler for `btn2` is dynamically created during runtime. `shinyEvents` is designed to allow both. There is a difference in so far that all handlers that will be generated before the app starts will be available in every instance of the app. In contrast, handlers that will be added dynamically will only be available for the specific instance of the app, in which the handler was generated. 
 
@@ -193,7 +188,7 @@ customEventHandler("ans_edit", css.locator=".ans-input",event = "keyup", functio
 }) 
 ```
 
-The handler is called when a jQuery `keyup` event is triggered on our manually generated input fields specified by the css class `ans-input`. If you look at the HTML code of our input fields, you see that we added a field `data-row`. By default all data fields of the element that triggers an element will be passed to the handler in the list variable `data`. Here we stored the row number and can now access it.
+The handler is called when a jQuery `keyup` event is triggered on our manually generated input fields specified by the css class `ans-input`. In the HTML code that created our input fields (previous example), you see that we added a field `data-row`. By default all data fields of the element that triggers an event will be passed to the handler in the variable `data`. Here we stored the row number, and can thus access it in the handler inside R.
 
 
 
