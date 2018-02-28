@@ -22,7 +22,9 @@ For example, when writing the initial shiny interface for my package RTutor [htt
 
 Anyway, I generated the package `shinyEvents` to emulate the classical event-handling paradigm for shiny applications and find it personally quite useful... 
 
-The shinyEvents package allows to write shiny applications that use classical event handlers, e.g. for button clicks, value changes, etc. One does not write an explicit server function, but just adds event handlers to an `app` object. Widgets will be updated with explicit calls to updateXXX or setXXXX functions, like e.g. `setText(id, "New text")`. Widget values and event handlers can be set in a similar fashion for an app that has not yet started as for an already running app. 
+The shinyEvents package allows to write shiny applications that use classical event handlers, e.g. for button clicks, value changes, etc. One does not write an explicit server function, but just adds event handlers to an `app` object. Widgets will be updated with explicit calls to updateXXX or setXXXX functions, like e.g. `setText(id, "New text")`. Widget values and event handlers can be set in a similar fashion for an app that has not yet started as for an already running app.
+
+More recently, I added features like custom event handlers for arbitrary jQuery events or better support for input forms. Take a look at the examples below.
 
 ## Installation
 
