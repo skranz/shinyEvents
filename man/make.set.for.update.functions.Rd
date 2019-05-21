@@ -8,6 +8,6 @@ make.set.for.update.functions(pkg = "shiny")
 }
 \description{
 Similar to update",base.name," in the package ", pkg, ",
-but no need to pass a session object.\n",
+but no need to pass a session object.",
 }
 
