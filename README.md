@@ -122,7 +122,7 @@ The `simpleButton` function has an argument `form.ids`, which lists the ids of a
 
 ## A more complex example with dynamic UI and custom HTML
 
-The two examples before could also be easily implemented with a traditional shiny app. Here is a more complex example with a dynamically created HTML table with multiple inputs:
+The two examples before could also be easily implemented with a traditional shiny app. Here is a more complex example with a dynamically created [HTML table](https://www.scaler.com/topics/html/tables-in-html/) with multiple inputs:
 
 ```r
 library(shinyEvents)
